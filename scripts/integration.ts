@@ -4,7 +4,7 @@ import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSy
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { runTests } from "@vscode/test-electron";
-import { build } from "esbuild";
+import { build, stop } from "esbuild";
 import { initStore, sessionFile } from "../src/collector/store.ts";
 import { hooksJson, layoutFor, manifestJson, type ConnectionState } from "../src/connect/plan.ts";
 import { ensurePrivateDir, sha256 } from "../src/secure/fs.ts";
@@ -67,6 +67,8 @@ async function main(): Promise<void> {
     outfile: suite,
     logLevel: "warning",
   });
+  // esbuild keeps a helper process alive, which would keep the test run hanging after VS Code exits.
+  stop();
   const { home, project } = fixtureHome();
   try {
     await runTests({
@@ -81,7 +83,10 @@ async function main(): Promise<void> {
   }
 }
 
-main().catch((error: unknown) => {
-  console.error(`Integrationstesterna föll: ${error instanceof Error ? error.message : String(error)}`);
-  process.exitCode = 1;
-});
+main()
+  .catch((error: unknown) => {
+    console.error(`Integrationstesterna föll: ${error instanceof Error ? error.message : String(error)}`);
+    process.exitCode = 1;
+  })
+  // VS Code leaves handles behind, so the script says when it is done instead of waiting for them.
+  .finally(() => process.exit(process.exitCode ?? 0));
