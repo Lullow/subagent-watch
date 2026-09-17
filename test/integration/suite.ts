@@ -4,7 +4,7 @@ import * as vscode from "vscode";
 import type { TestApi } from "../../src/extension.ts";
 
 const TIMEOUT_MS = 20_000;
-const COMMANDS = ["subagentWatch.openView", "subagentWatch.deleteData"];
+const COMMANDS = ["subagentWatch.openView", "subagentWatch.openEditor", "subagentWatch.deleteData"];
 
 /** Refreshes run every second and the webview loads on its own, so tests wait for the state they expect. */
 async function waitFor<T>(describe: () => string, read: () => T | null): Promise<T> {
@@ -57,6 +57,18 @@ const tests: [string, (api: TestApi) => Promise<void>][] = [
           ["agent", "Explore", "Kartlägg hook-dokumentationen", "running"],
         ],
       );
+    },
+  ],
+  [
+    "vyn kan också öppnas som en flik i editorytan",
+    async (api) => {
+      await vscode.commands.executeCommand("subagentWatch.openEditor");
+      await waitFor(
+        () => `${api.editorCount()} flikar är öppna`,
+        () => (api.editorCount() === 1 ? true : null),
+      );
+      await vscode.commands.executeCommand("subagentWatch.openEditor");
+      assert.equal(api.editorCount(), 1, "kommandot ska visa den öppna fliken i stället för att öppna en till");
     },
   ],
 ];

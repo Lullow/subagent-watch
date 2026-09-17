@@ -7,6 +7,7 @@ const OPTIONS = {
   scriptUri: "https://webview.example/dist/view.js",
   styleUri: "https://webview.example/dist/view.css",
   nonce: "abc123",
+  place: "panel" as const,
 };
 
 test("strikta säkerhetsregler utan externa resurser, connect-src eller inline-kod (S8)", () => {
@@ -17,6 +18,8 @@ test("strikta säkerhetsregler utan externa resurser, connect-src eller inline-k
   const html = viewHtml(OPTIONS);
   assert.ok(html.includes('<script nonce="abc123" src="https://webview.example/dist/view.js"></script>'));
   assert.equal(html.match(/<script/g)?.length, 1);
+  assert.ok(html.includes('<main id="root" class="sw" data-place="panel"></main>'));
+  assert.ok(viewHtml({ ...OPTIONS, place: "editor" }).includes('data-place="editor"'));
   assert.doesNotMatch(html, /unsafe-inline|unsafe-eval|connect-src|<style|style="/);
 });
 

@@ -116,7 +116,7 @@ const tip = el("div", "sw-tip");
 detail.setAttribute("aria-live", "polite");
 tip.setAttribute("role", "tooltip");
 tip.hidden = true;
-root.append(legend, scroll, detail, othersRow, statusRow, tip);
+root.append(el("div", "sw-spacer"), legend, scroll, detail, othersRow, statusRow, el("div", "sw-spacer"), tip);
 
 /** Q26: the legend, with the explanation of Tänka in its tooltip. */
 const MARKS = [
@@ -355,7 +355,6 @@ function renderAll(): void {
       el("div", "sw-empty", snapshot.status.kind === "not-connected" ? "subagent-watch är inte ansluten till Claude Code än." : "Inga sessioner med Claude Code i det här projektet det senaste dygnet."),
     );
   }
-  blocks.push(el("div", "sw-spacer"));
   scroll.replaceChildren(...blocks);
   known = seen;
   firstRender = false;

@@ -10,7 +10,7 @@ import { windowView } from "./model/window.ts";
 import { currentUid } from "./secure/fs.ts";
 import { statusFacts, type InstallFacts } from "./status/health.ts";
 import { readInstall } from "./status/read.ts";
-import { SubagentViewProvider, VIEW_ID } from "./view/provider.ts";
+import { EditorViews, SubagentViewProvider, VIEW_ID } from "./view/provider.ts";
 import type { ViewSnapshot } from "./view/types.ts";
 
 /** Only for the integration tests: read-only, and never returned outside VS Code's test mode. */
@@ -18,9 +18,11 @@ export interface TestApi {
   statusBarText(): string | null;
   snapshot(): ViewSnapshot | null;
   webviewReady(): boolean;
+  editorCount(): number;
 }
 
 const OPEN_COMMAND = "subagentWatch.openView";
+const EDITOR_COMMAND = "subagentWatch.openEditor";
 const DELETE_COMMAND = "subagentWatch.deleteData";
 /** Hooks write a line per event; reading only new lines each second is cheap. */
 const REFRESH_EVERY_MS = 1000;
@@ -36,6 +38,7 @@ class Controller implements vscode.Disposable {
   private readonly layout = layoutFor(this.userHome);
   private readonly item = vscode.window.createStatusBarItem("subagentWatch.status", vscode.StatusBarAlignment.Right, 99);
   private readonly provider: SubagentViewProvider;
+  private readonly editors: EditorViews;
   private readonly disposables: vscode.Disposable[] = [];
   private readonly timer: NodeJS.Timeout;
   private store = new SessionStore(this.layout.home, this.uid);
@@ -45,11 +48,13 @@ class Controller implements vscode.Disposable {
 
   constructor(extensionUri: vscode.Uri) {
     this.provider = new SubagentViewProvider(extensionUri);
+    this.editors = new EditorViews(extensionUri);
     this.item.name = "subagent-watch";
     this.item.command = { command: OPEN_COMMAND, title: "Öppna subagent-watch" };
     this.disposables.push(
       vscode.window.registerWebviewViewProvider(VIEW_ID, this.provider),
       vscode.commands.registerCommand(OPEN_COMMAND, () => vscode.commands.executeCommand(`${VIEW_ID}.focus`)),
+      vscode.commands.registerCommand(EDITOR_COMMAND, () => this.editors.open()),
       vscode.commands.registerCommand(DELETE_COMMAND, () => this.deleteData()),
       vscode.workspace.onDidChangeWorkspaceFolders(() => this.refresh()),
     );
@@ -67,6 +72,10 @@ class Controller implements vscode.Disposable {
 
   get webviewReady(): boolean {
     return this.provider.webviewReady;
+  }
+
+  get editorCount(): number {
+    return this.editors.count;
   }
 
   private refresh(): void {
@@ -100,6 +109,7 @@ class Controller implements vscode.Disposable {
     this.last = snapshot;
     this.renderStatusBar(view.running, view.unknown);
     this.provider.update(snapshot);
+    this.editors.update(snapshot);
   }
 
   /** Q11: one entry, only while agents run in the window's projects. */
@@ -142,6 +152,7 @@ class Controller implements vscode.Disposable {
   dispose(): void {
     clearInterval(this.timer);
     this.item.dispose();
+    this.editors.dispose();
     for (const disposable of this.disposables) disposable.dispose();
   }
 }
@@ -154,6 +165,7 @@ export function activate(context: vscode.ExtensionContext): TestApi | undefined 
     statusBarText: () => controller.statusBarText,
     snapshot: () => controller.snapshot,
     webviewReady: () => controller.webviewReady,
+    editorCount: () => controller.editorCount,
   };
 }
 

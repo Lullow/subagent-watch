@@ -273,7 +273,8 @@ webbvy i bottenpanelen  ·  post i statusfältet  ·  statusrad med kontrollsumm
    - **Rättat 2026-09-17 efter första blicken i VS Code:** vyn fungerar nu också avlång. Q30 sa bara att en smal vy visar agenttypen, men i praktiken är varje plats utom hela bottenpanelen smal och hög.
      - **Tre former:** bred (tidslinje bredvid namnen), smal under 420 px (bara agenttypen) och stående under 320 px, där typ och beskrivning står ovanför en tidslinje i full bredd. Linjerna mellan förälder och agent fungerar i alla tre.
      - **I den stående formen** visas också hur länge varje rad har hållit på, bredvid namnet.
-     - **Ingen död yta:** raderna, detaljpanelen, raden för andra sessioner och statusraden ligger tätt uppifrån, och tomrummet hamnar underst i stället för mellan dem.
+     - **Ingen död yta:** raderna, detaljpanelen, raden för andra sessioner och statusraden ligger tätt ihop. I panelen och sidopanelen ligger de mot nederkanten, så att raderna sitter intill detaljpanelen, och tomrummet hamnar överst.
+     - **Brett läge (tillägg till Q4):** kommandot "Öppna i en flik" öppnar vyn som en egen flik i editorytan, där tidslinjen får full bredd. Panelvyn finns kvar. I fliken ligger innehållet mot överkanten.
 
 ## Källor
 - Hooks: https://code.claude.com/docs/en/hooks

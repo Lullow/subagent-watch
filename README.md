@@ -43,7 +43,7 @@ code --install-extension subagent-watch.vsix      # i en WSL-terminal: installer
 code --uninstall-extension lullo.subagent-watch   # tar bort den igen
 ```
 
-Vyn ligger i bottenpanelen under fliken subagent-watch och kan dras bredvid Terminal eller in i sidopanelen. Den har tre former: bred med tidslinjen bredvid namnen, smal under 420 px med bara agenttypen, och stående under 320 px där tidslinjen ligger i full bredd under varje namn. Posten `⚙ 2` i statusfältet syns bara när agenter kör i fönstrets projekt. Kommandot "subagent-watch: Radera insamlad data" tar bort alla sessionsfiler efter en bekräftelse.
+Vyn ligger i bottenpanelen under fliken subagent-watch och kan dras bredvid Terminal eller in i sidopanelen. Kommandot "subagent-watch: Öppna i en flik", eller knappen i vyns rubrik, öppnar den som en egen flik i editorytan, där tidslinjen får full bredd. Den har tre former: bred med tidslinjen bredvid namnen, smal under 420 px med bara agenttypen, och stående under 320 px där tidslinjen ligger i full bredd under varje namn. Posten `⚙ 2` i statusfältet syns bara när agenter kör i fönstrets projekt. Kommandot "subagent-watch: Radera insamlad data" tar bort alla sessionsfiler efter en bekräftelse.
 
 ## Tolkningen
 

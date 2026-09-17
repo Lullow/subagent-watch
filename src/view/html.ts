@@ -3,6 +3,8 @@ export interface HtmlOptions {
   scriptUri: string;
   styleUri: string;
   nonce: string;
+  /** "panel" keeps the content at the bottom edge, where the panel and the side bar are narrow. */
+  place: "panel" | "editor";
 }
 
 const attribute = (value: string): string => value.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
@@ -26,7 +28,7 @@ export function viewHtml(options: HtmlOptions): string {
 <title>subagent-watch</title>
 </head>
 <body>
-<main id="root" class="sw"></main>
+<main id="root" class="sw" data-place="${attribute(options.place)}"></main>
 <script nonce="${attribute(options.nonce)}" src="${attribute(options.scriptUri)}"></script>
 </body>
 </html>`;

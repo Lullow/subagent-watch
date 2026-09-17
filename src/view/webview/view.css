@@ -38,14 +38,18 @@ body {
   position: relative;
   height: 100%;
   display: grid;
-  /* The rows keep together at the top; free space is left below, never between them. */
-  grid-template-rows: auto minmax(0, max-content) auto auto auto 1fr;
+  /* A spacer at each end: in a tab the content starts at the top, and in the panel and the side bar
+     it sits at the bottom edge, so the rows stay next to the detail panel. Free space is never
+     left between them. */
+  grid-template-rows: 0 auto minmax(0, max-content) auto auto auto 1fr;
   min-width: 0;
   color: var(--fg);
   font-family: var(--vscode-font-family);
   font-size: 12px;
   line-height: 1.35;
 }
+.sw[data-place="panel"] { grid-template-rows: 1fr auto minmax(0, max-content) auto auto auto 0; }
+
 .sw[data-form="narrow"] {
   --lc: 118px;
   --pad: 10px;

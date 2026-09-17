@@ -46,11 +46,26 @@
         "category": "subagent-watch"
       },
       {
+        "command": "subagentWatch.openEditor",
+        "title": "Öppna i en flik",
+        "category": "subagent-watch",
+        "icon": "$(link-external)"
+      },
+      {
         "command": "subagentWatch.deleteData",
         "title": "Radera insamlad data",
         "category": "subagent-watch"
       }
-    ]
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "subagentWatch.openEditor",
+          "when": "view == subagentWatch.view",
+          "group": "navigation"
+        }
+      ]
+    }
   },
   "scripts": {
     "build": "node esbuild.mjs",
