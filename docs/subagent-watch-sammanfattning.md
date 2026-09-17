@@ -262,6 +262,14 @@ webbvy i bottenpanelen  ·  post i statusfältet  ·  statusrad med kontrollsumm
      - **Start av en bakgrundsagent** är en omedelbar bit som vyn inte visar. Händelser utan `UserPromptSubmit` före sig, som i spike-körningarna, får en tur som börjar vid första händelsen.
      - **Andra projekt** räknas i raden för andra sessioner så länge de har agenter som kör eller har varit aktiva den senaste timmen. En avslutad session räknas inte.
      - **Läsningen** avvisar filer större än 20 MB plus 64 KB, och märker en fil som har återskapats med samma namn genom att jämföra de första byten.
+   - **Klart 2026-09-17:** vyn enligt den godkända skissen: webbvy i bottenpanelen med förklaring, tidslinje, detaljpanel, raden för andra sessioner och statusraden, posten i statusfältet och kommandot "Radera insamlad data". Webbvyn har CSP utan inline-kod och `connect-src` (S8), bygger all text med `textContent` (S9) och tar bara emot kopiering av två fasta kommandon (S10). Testerna kontrollerar att vyns stil bara tar färger från temat och har regler för högkontrast och minskad rörelse (acceptanskriterium 11). Integrationstesterna i VS Code 1.137.0 körs i CI, eftersom VS Code saknar systembibliotek i WSL. Beslut under bygget:
+     - **Flera sessioner i projektet** (Q16) får var sin tidsaxel, med den senast aktiva överst.
+     - **En utfälld äldre tur** ligger kvar när en ny tur startar. Den nya turen syns ihopfälld med texten "pågår".
+     - **En agent utan känd beskrivning** visas med "ingen beskrivning" i stället för en gissning.
+     - **Klockan** i webbvyn följer extensionens klocka i WSL, så att bitarna växer rätt även om Windows och WSL går olika.
+     - **Längder under en sekund** visas i millisekunder.
+     - **Uppdatering:** vyn läser nya rader varje sekund och kontrollsummorna var femte sekund. Webbvyn får data bara när något har ändrats, och bitarna växer bara medan en tur pågår (Q10).
+     - **Radera insamlad data** bekräftas i VS Codes egen dialog och tar bara bort sessions- och problemfiler. Pluginet och insamlaren ligger kvar.
 
 ## Källor
 - Hooks: https://code.claude.com/docs/en/hooks

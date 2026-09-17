@@ -53,7 +53,13 @@ export function logProblem(home: string, kind: string, epochMs: number, uid = cu
  * Removes session and problem files whose last write is more than 24 hours old (Q17, Q25).
  * Only regular files owned by uid with a known name pattern; anything else is left alone.
  */
-export function removeExpired(home: string, now: number, uid = currentUid()): number {
+export const removeExpired = (home: string, now: number, uid = currentUid()): number =>
+  removeFiles(home, (mtimeMs) => now - mtimeMs >= RETENTION_MS, uid);
+
+/** Q17: the command that deletes all collected data at once, with the same checks. */
+export const removeAll = (home: string, uid = currentUid()): number => removeFiles(home, () => true, uid);
+
+function removeFiles(home: string, expired: (mtimeMs: number) => boolean, uid: number): number {
   const dir = sessionsDir(home);
   assertPrivateDir(dir, uid);
   let removed = 0;
@@ -61,7 +67,7 @@ export function removeExpired(home: string, now: number, uid = currentUid()): nu
     if (!SESSION_FILE.test(name) && !PROBLEM_FILE.test(name)) continue;
     const path = join(dir, name);
     const st = lstatSync(path);
-    if (!st.isFile() || st.uid !== uid || now - st.mtimeMs < RETENTION_MS) continue;
+    if (!st.isFile() || st.uid !== uid || !expired(st.mtimeMs)) continue;
     unlinkSync(path);
     removed++;
   }

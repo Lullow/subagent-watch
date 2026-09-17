@@ -64,3 +64,10 @@ export interface SessionModel {
   ended?: { at: number; reason?: string };
   turns: Turn[];
 }
+
+/** A project outside the window, summarized on one row (Q3). */
+export interface OtherProject {
+  name: string;
+  running: number;
+  unknown: number;
+}

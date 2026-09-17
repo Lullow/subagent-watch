@@ -1,14 +1,8 @@
 import { basename } from "node:path";
-import type { SessionModel } from "./types.ts";
+import type { OtherProject, SessionModel } from "./types.ts";
 
 /** Sessions in other projects count in the summary row while they run agents or were active recently. */
 export const OTHERS_RECENT_MS = 60 * 60 * 1000;
-
-export interface OtherProject {
-  name: string;
-  running: number;
-  unknown: number;
-}
 
 export interface WindowView {
   /** Sessions in the window's projects, the most recently active first (Q16). */

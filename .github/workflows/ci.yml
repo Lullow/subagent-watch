@@ -1,4 +1,4 @@
-# Typecheck, unit tests and end-to-end tests of the built collector.
+# Typecheck, unit tests, end-to-end tests and the integration tests in real VS Code.
 # Read-only access, no secrets, and actions pinned to exact commits.
 name: CI
 
@@ -17,7 +17,7 @@ concurrency:
 jobs:
   test:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -39,3 +39,17 @@ jobs:
 
       - name: Tester från början till slut
         run: npm run test:e2e
+
+      - name: Virtuell skärm för VS Code
+        run: command -v xvfb-run || (sudo apt-get update && sudo apt-get install -y xvfb)
+
+      - name: Integrationstester i VS Code
+        run: xvfb-run -a npm run test:integration
+
+      - name: Paketera VSIX och kontrollera innehållet
+        run: |
+          npm run package
+          python3 -c 'import zipfile; print("\n".join(zipfile.ZipFile("subagent-watch.vsix").namelist()))' | sort > vsix-files.txt
+          printf '%s\n' '[Content_Types].xml' extension.vsixmanifest extension/package.json extension/readme.md \
+            extension/dist/extension.js extension/dist/view.js extension/dist/view.css extension/media/subagent-watch.svg | sort > vsix-expected.txt
+          diff -u vsix-expected.txt vsix-files.txt

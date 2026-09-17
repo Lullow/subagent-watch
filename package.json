@@ -10,18 +10,66 @@
     "type": "git",
     "url": "https://github.com/Lullow/subagent-watch.git"
   },
+  "engines": {
+    "vscode": "^1.137.0"
+  },
+  "main": "./dist/extension.js",
+  "extensionKind": [
+    "workspace"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "viewsContainers": {
+      "panel": [
+        {
+          "id": "subagentWatch",
+          "title": "subagent-watch",
+          "icon": "media/subagent-watch.svg"
+        }
+      ]
+    },
+    "views": {
+      "subagentWatch": [
+        {
+          "type": "webview",
+          "id": "subagentWatch.view",
+          "name": "subagent-watch"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "subagentWatch.openView",
+        "title": "Öppna vyn",
+        "category": "subagent-watch"
+      },
+      {
+        "command": "subagentWatch.deleteData",
+        "title": "Radera insamlad data",
+        "category": "subagent-watch"
+      }
+    ]
+  },
   "scripts": {
     "build": "node esbuild.mjs",
     "watch": "node esbuild.mjs --watch",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p src/view/webview",
     "test:unit": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --disable-warning=ExperimentalWarning --test 'test/unit/**/*.test.ts'",
     "test:e2e": "npm run build && node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --disable-warning=ExperimentalWarning --test 'test/e2e/**/*.test.ts'",
     "test": "npm run test:unit && npm run test:e2e",
     "testdata": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --disable-warning=ExperimentalWarning scripts/testdata.ts",
-    "connect": "npm run build && node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/connect.ts"
+    "connect": "npm run build && node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/connect.ts",
+    "test:integration": "npm run build && node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --disable-warning=ExperimentalWarning scripts/integration.ts",
+    "package": "vsce package --no-dependencies --skip-license --out subagent-watch.vsix",
+    "vscode:prepublish": "node esbuild.mjs --production"
   },
   "devDependencies": {
     "@types/node": "^24.13.4",
+    "@types/vscode": "^1.137.0",
+    "@vscode/test-electron": "3.1.0",
+    "@vscode/vsce": "4.0.0",
     "esbuild": "^0.28.2",
     "typescript": "^7.0.2"
   }

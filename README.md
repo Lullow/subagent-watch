@@ -2,7 +2,7 @@
 
 VS Code-extension som visar Claude Codes subagenter medan de arbetar – bara från dokumenterade, lokala källor.
 
-**Status:** bygget har börjat. Alla designbeslut finns i [docs/subagent-watch-sammanfattning.md](docs/subagent-watch-sammanfattning.md), och den godkända skissen i [docs/skiss/subagent-watch-skiss.html](docs/skiss/subagent-watch-skiss.html). Insamlaren, anslutningen och tolkningen är klara. Vyn återstår.
+**Status:** bygget har börjat. Alla designbeslut finns i [docs/subagent-watch-sammanfattning.md](docs/subagent-watch-sammanfattning.md), och den godkända skissen i [docs/skiss/subagent-watch-skiss.html](docs/skiss/subagent-watch-skiss.html). Första versionen är byggd: insamlaren, anslutningen, tolkningen och vyn.
 
 ## Utveckling
 
@@ -12,11 +12,14 @@ Kräver Node 24.13 eller senare.
 npm install
 npm run build      # bygger dist/collector.js med esbuild
 npm run typecheck
-npm test           # enhetstester och tester av den byggda insamlaren
+npm test           # enhetstester och tester av de byggda filerna
+npm run test:integration  # startar VS Code 1.137.0 med påhittad data; kräver en skärm (CI använder xvfb)
 npm run testdata   # skapar test/fixtures/runs/ från spike/runs/, som aldrig checkas in (S11)
 ```
 
-CI på GitHub (`.github/workflows/ci.yml`) kör typkontroll, enhetstester och tester från början till slut vid varje push till `main` och varje pull request. Arbetsflödet har bara läsrättighet, inga hemligheter och actions låsta till exakta commits.
+Starta extensionen i en utvecklingsinstans med F5 ("Kör extension").
+
+CI på GitHub (`.github/workflows/ci.yml`) kör typkontroll, enhetstester, tester från början till slut och integrationstesterna i VS Code, och paketerar en VSIX vars innehåll kontrolleras, vid varje push till `main` och varje pull request. Arbetsflödet har bara läsrättighet, inga hemligheter och actions låsta till exakta commits.
 
 ## Insamlaren
 
@@ -31,6 +34,16 @@ CI på GitHub (`.github/workflows/ci.yml`) kör typkontroll, enhetstester och te
 - **Skriver aldrig** till stdout eller stderr och avslutar alltid med kod 0.
 - **Kastade händelser** räknas i `sessions/problems-ÅÅÅÅ-MM-DD.jsonl` med bara orsak och tid.
 - **Rensning:** vid `SessionStart` tas filer bort vars senaste händelse är äldre än 24 timmar.
+
+## Installera
+
+```sh
+npm run package                                   # bygger subagent-watch.vsix med bara det extensionen behöver
+code --install-extension subagent-watch.vsix      # i en WSL-terminal: installerar i VS Code-servern i WSL
+code --uninstall-extension lullo.subagent-watch   # tar bort den igen
+```
+
+Vyn ligger i bottenpanelen under fliken subagent-watch och kan dras bredvid Terminal. Posten `⚙ 2` i statusfältet syns bara när agenter kör i fönstrets projekt. Kommandot "subagent-watch: Radera insamlad data" tar bort alla sessionsfiler efter en bekräftelse.
 
 ## Tolkningen
 
