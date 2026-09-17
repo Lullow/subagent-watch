@@ -211,6 +211,31 @@ test("en ny prompt startar en ny tur, och agenter hör till turen där de starta
   assert.deepEqual([two!.state, two!.end, two!.errorType, two!.lanes.map((l) => l.id)], ["done", T(12), "rate_limit", ["main"]]);
 });
 
+test("ett Agent-anrop som svarar långt före agenten är klar räknas som en start i bakgrunden", () => {
+  const launch = [
+    at(0, "UserPromptSubmit"),
+    at(1, "PreToolUse", { agent_id: "outer", agent_type: "general-purpose", tool: "Agent", tool_use_id: "toolu_1", detail: "Hitta CI-filen" }),
+    at(1.04, "PostToolUse", { agent_id: "outer", agent_type: "general-purpose", tool: "Agent", tool_use_id: "toolu_1", spawned_agent_id: "inner" }),
+    at(1.05, "SubagentStart", { agent_id: "inner", agent_type: "Explore" }),
+    at(4, "SubagentStop", { agent_id: "inner", agent_type: "Explore" }),
+  ];
+  const started = lane(onlyTurn(launch), "inner");
+  assert.equal(started.background, true);
+  const call = lane(onlyTurn(launch), "outer").pieces.find((p) => p.tool === "Agent")!;
+  assert.deepEqual([call.kind, call.launch], ["other", true]);
+
+  const waited = [
+    at(0, "UserPromptSubmit"),
+    at(1, "PreToolUse", { tool: "Agent", tool_use_id: "toolu_2", detail: "Läs README" }),
+    at(1.05, "SubagentStart", { agent_id: "fg", agent_type: "Explore" }),
+    at(4, "SubagentStop", { agent_id: "fg", agent_type: "Explore" }),
+    at(4.04, "PostToolUse", { tool: "Agent", tool_use_id: "toolu_2", spawned_agent_id: "fg" }),
+  ];
+  const turn = onlyTurn(waited);
+  assert.equal(lane(turn, "fg").background, false);
+  assert.deepEqual(lane(turn, "main").pieces.find((p) => p.tool === "Agent")?.kind, "wait");
+});
+
 test("klockan som hoppar bakåt ger aldrig negativa längder", () => {
   const records = run("03a-stoppad-bgbash");
   assert.ok(records.some((r, i) => i > 0 && r.time < records[i - 1]!.time), "testdatan ska innehålla ett hopp bakåt");

@@ -275,6 +275,9 @@ webbvy i bottenpanelen  ·  post i statusfältet  ·  statusrad med kontrollsumm
      - **I den stående formen** visas också hur länge varje rad har hållit på, bredvid namnet.
      - **Ingen död yta:** raderna, detaljpanelen, raden för andra sessioner och statusraden ligger tätt ihop. I panelen och sidopanelen ligger de mot nederkanten, så att raderna sitter intill detaljpanelen, och tomrummet hamnar överst.
      - **Brett läge (tillägg till Q4):** kommandot "Öppna i en flik" öppnar vyn som en egen flik i editorytan, där tidslinjen får full bredd. Panelvyn finns kvar. I fliken ligger innehållet mot överkanten.
+   - **Prövat i en riktig session 2026-09-17** med en agent i förgrunden, en i bakgrunden som startade en egen agent, ett långsamt Bash-anrop och ett som misslyckades. Två fynd:
+     - **En agent som startas av en bakgrundsagent** svarar direkt med `PostToolUse` och `agentId`, men utan `run_in_background` i anropet. Tolkningen räknar därför ett Agent-anrop som slutar långt före sin agent som en start i bakgrunden, inte som väntan.
+     - **När en bakgrundsagent blir klar kommer en ny `UserPromptSubmit`**, alltså en ny tur, inte en fortsättning på den gamla. Beslutet i tolkningen om att huvudsessionen kan fortsätta i samma tur gäller fortfarande, men i praktiken blir det oftast en ny tur med bara Tänka och ett svar.
 
 ## Källor
 - Hooks: https://code.claude.com/docs/en/hooks

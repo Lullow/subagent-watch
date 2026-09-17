@@ -326,11 +326,14 @@ export function interpretSession(id: string, records: readonly HookRecord[], now
     }
   }
 
-  finish(turns, calls, session, now);
+  finish(turns, calls, agents, session, now);
   return session;
 }
 
-function finish(turns: TurnWork[], calls: Map<string, AgentCall>, session: SessionModel, now: number): void {
+/** How much later than its agent an Agent call may end and still count as waiting for it. */
+const LAUNCH_MARGIN_MS = 500;
+
+function finish(turns: TurnWork[], calls: Map<string, AgentCall>, agents: Map<string, LaneWork>, session: SessionModel, now: number): void {
   const callByAgent = new Map<string, AgentCall>();
   for (const call of calls.values()) if (call.agentId) callByAgent.set(call.agentId, call);
 
@@ -340,7 +343,17 @@ function finish(turns: TurnWork[], calls: Map<string, AgentCall>, session: Sessi
       if (w.active && w.idleSince !== undefined) w.lane.pieces.push({ kind: "think", start: w.idleSince });
       for (const piece of w.lane.pieces) {
         const agentId = piece.tool === "Agent" && piece.toolUseId !== undefined ? calls.get(piece.toolUseId)?.agentId : undefined;
-        if (agentId) piece.agentId = agentId;
+        if (!agentId) continue;
+        piece.agentId = agentId;
+        // An Agent call that ends long before its agent does was a launch, not a wait: Claude Code
+        // answers at once for a background agent, even when run_in_background is not in the call.
+        const agent = agents.get(agentId);
+        if (agent === undefined || piece.end === undefined) continue;
+        const ended = agent.lane.end;
+        if (ended !== undefined && piece.end >= ended - LAUNCH_MARGIN_MS) continue;
+        piece.kind = "other";
+        piece.launch = true;
+        agent.lane.background = true;
       }
       w.lane.pieces.sort((a, b) => a.start - b.start);
     }
@@ -348,7 +361,7 @@ function finish(turns: TurnWork[], calls: Map<string, AgentCall>, session: Sessi
       const call = callByAgent.get(a.lane.id);
       a.lane.parentId = call?.parentId ?? "main";
       if (call !== undefined) {
-        a.lane.background = call.background;
+        a.lane.background = a.lane.background || call.background;
         if (call.description !== undefined) a.lane.description = call.description;
       }
     }
