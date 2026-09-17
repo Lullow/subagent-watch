@@ -249,6 +249,11 @@ webbvy i bottenpanelen  ·  post i statusfältet  ·  statusrad med kontrollsumm
      - `PostToolUse` och `PostToolUseFailure` sparar också `duration_ms`. Det räknas till tiderna i Q8 och är pålitligare än tidsstämplarna i WSL.
      - Detaljen för ett verktyg sparas bara vid `PreToolUse`, eftersom `PostToolUse` har samma `tool_use_id`.
      - Kastade händelser räknas per dygn i `sessions/problems-ÅÅÅÅ-MM-DD.jsonl`, med bara orsak och tid, och rensas som sessionerna.
+   - **Klart 2026-09-17:** `npm run connect` med bortkoppling (Q22). Planen visar mappar, filer med kontrollsummor, Node-versionen och hela hook-kommandot, och den måste godkännas med sin hash. Anslutningen skriver aldrig till `settings.json` (acceptanskriterium 10, testat byte för byte) och avbryts enligt S7. Beslut under bygget:
+     - Hooks gäller först i nya sessioner eller efter `/reload-plugins` (dokumenterat), och det står i utskriften.
+     - `hooks.json` skrivs sist, så pluginet har inga hooks förrän allt annat är på plats. `connection.json` skrivs före pluginfilerna, så att en avbruten anslutning kan städas med `--disconnect`.
+     - Bortkopplingen tar bort `hooks.json` först. Om en fil har ändrats lämnas den och `connection.json` kvar, så att bortkopplingen kan köras igen när du har tittat på filen.
+     - Planen varnar om `disableAllHooks` är på eller om `subagent-watch@skills-dir` är avstängt i `enabledPlugins`. Dokumentationen säger att pluginet kan stängas av där.
 
 ## Källor
 - Hooks: https://code.claude.com/docs/en/hooks

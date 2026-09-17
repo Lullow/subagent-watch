@@ -1,7 +1,17 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { HOOK_EVENTS } from "../../src/collector/record.ts";
-import { assertCommandPath, collectorArgs, hooksConfig, layoutFor, nodeVersionSupported } from "../../src/connect/plan.ts";
+import {
+  assertCommandPath,
+  canonicalJson,
+  collectorArgs,
+  hooksConfig,
+  layoutFor,
+  manifestJson,
+  nodeVersionSupported,
+  parseConnectionState,
+  planRemovals,
+} from "../../src/connect/plan.ts";
 
 const NODE = "/home/lullo/.nvm/versions/node/v24.14.1/bin/node";
 
@@ -51,4 +61,61 @@ test("bara Node med rättelsen av CVE-2025-55130 godkänns", () => {
     ["v24.14.1-pre", false],
   ];
   for (const [version, ok] of cases) assert.equal(nodeVersionSupported(version), ok, version);
+});
+
+test("plugin.json har ett giltigt namn och inga fält för hooks", () => {
+  const manifest = JSON.parse(manifestJson());
+  assert.deepEqual(Object.keys(manifest).sort(), ["description", "name"]);
+  assert.match(manifest.name, /^[a-z0-9]+(-[a-z0-9]+)*$/);
+});
+
+test("lika planer ger samma JSON oavsett nyckelordning", () => {
+  assert.equal(canonicalJson({ b: 1, a: { d: [2, { f: 1, e: 0 }], c: null } }), canonicalJson({ a: { c: null, d: [2, { e: 0, f: 1 }] }, b: 1 }));
+  assert.equal(canonicalJson({ a: undefined, b: 1 }), '{"b":1}');
+});
+
+const HASH = "a".repeat(64);
+const STATE = {
+  format: 1,
+  node: { path: NODE, version: "24.14.1" },
+  collectorSha256: HASH,
+  manifestSha256: HASH,
+  hooksSha256: HASH,
+  connectedAt: 1_789_646_400_000,
+};
+
+test("connection.json läses strikt", () => {
+  assert.deepEqual(parseConnectionState(JSON.stringify(STATE)), STATE);
+  const broken: [unknown, RegExp][] = [
+    [{ ...STATE, extra: 1 }, /extra/],
+    [{ ...STATE, format: 2 }, /format/],
+    [{ ...STATE, hooksSha256: "ABC" }, /hooksSha256/],
+    [{ ...STATE, node: { path: "/min node/node", version: "24.14.1" } }, /node\.path/],
+    [{ ...STATE, node: { path: NODE, version: "24.14.1", extra: true } }, /node/],
+    [[], /rot/],
+  ];
+  for (const [value, message] of broken) assert.throws(() => parseConnectionState(JSON.stringify(value)), message);
+  assert.throws(() => parseConnectionState("{"), /inte giltig JSON/);
+});
+
+test("bortkopplingen tar bara bort filer vars kontrollsumma stämmer", () => {
+  const other = "b".repeat(64);
+  assert.deepEqual(
+    planRemovals([
+      { path: "/h/hooks.json", expected: HASH, state: "present", sha256: other },
+      { path: "/h/plugin.json", expected: HASH, state: "present", sha256: HASH },
+      { path: "/h/collector.cjs", expected: HASH, state: "missing" },
+    ]),
+    {
+      remove: [{ path: "/h/plugin.json", sha256: HASH }],
+      keep: [{ path: "/h/hooks.json", reason: `har ändrats sedan anslutningen (sha256 ${other})` }],
+      removeConnection: false,
+    },
+  );
+  assert.deepEqual(planRemovals([{ path: "/h/hooks.json", expected: HASH, state: "unsafe", reason: "är en symbolisk länk." }]), {
+    remove: [],
+    keep: [{ path: "/h/hooks.json", reason: "är en symbolisk länk." }],
+    removeConnection: false,
+  });
+  assert.deepEqual(planRemovals([{ path: "/h/hooks.json", expected: HASH, state: "missing" }]), { remove: [], keep: [], removeConnection: true });
 });
