@@ -1,0 +1,1273 @@
+<title>subagent-watch skiss</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Schibsted+Grotesk:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --ground:#E7EAEF; --surface:#F5F6F8; --ink:#141922; --muted:#566073; --rule:#C9D0DA;
+  --accent:#0A58C2; --accent-ink:#FFFFFF;
+  --shadow:0 1px 2px rgba(20,25,34,.08),0 18px 48px -18px rgba(20,25,34,.35);
+  --sans:"Schibsted Grotesk","Segoe UI",system-ui,sans-serif;
+  --mono:"JetBrains Mono","Cascadia Mono",Consolas,ui-monospace,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#0E1218; --surface:#151A22; --ink:#E3E7ED; --muted:#939CAC; --rule:#283040;
+    --accent:#6CA5FF; --accent-ink:#081120;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 20px 56px -20px rgba(0,0,0,.8);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0E1218; --surface:#151A22; --ink:#E3E7ED; --muted:#939CAC; --rule:#283040;
+  --accent:#6CA5FF; --accent-ink:#081120;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 20px 56px -20px rgba(0,0,0,.8);
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5}
+.wrap{max-width:1320px;margin:0 auto;padding-block:32px 64px;padding-inline:max(16px,3vw)}
+
+/* ---------- Sidans ram ---------- */
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+h1{margin:0;font-size:clamp(34px,5vw,50px);line-height:1;font-weight:700;letter-spacing:-.028em}
+.lede{max-width:66ch;color:var(--muted);margin:14px 0 0;font-size:16px;text-wrap:pretty}
+
+.controls{display:flex;flex-wrap:wrap;gap:16px 26px;align-items:flex-end;margin-block:28px 18px;padding-block:16px;border-block:1px solid var(--rule)}
+fieldset{border:0;margin:0;padding:0;min-width:0}
+legend,.ctl-label{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);padding:0 0 6px;float:left;width:100%}
+.seg-row{clear:both;display:flex;flex-wrap:wrap}
+.seg input{position:absolute;opacity:0;width:1px;height:1px;margin:0}
+.seg label{font-size:14px;line-height:1.2;padding:7px 12px;border:1px solid var(--rule);margin-left:-1px;background:var(--surface);color:var(--ink);cursor:pointer;position:relative;white-space:nowrap}
+.seg label:first-of-type{border-radius:4px 0 0 4px;margin-left:0}
+.seg label:last-of-type{border-radius:0 4px 4px 0}
+.seg label:hover{z-index:1;border-color:var(--muted)}
+.seg input:checked + label{background:var(--ink);color:var(--ground);border-color:var(--ink);z-index:2}
+.seg input:focus-visible + label{outline:2px solid var(--accent);outline-offset:2px;z-index:3}
+.check{display:flex;align-items:center;gap:8px;font-size:14px;padding-block:7px;cursor:pointer}
+.check input{accent-color:var(--accent);width:16px;height:16px;margin:0}
+.b{font:600 14px var(--sans);padding:7px 14px;border-radius:4px;cursor:pointer;line-height:1.2}
+.b-primary{background:var(--accent);color:var(--accent-ink);border:1px solid var(--accent);min-width:6.5em}
+.b-ghost{background:transparent;color:var(--ink);border:1px solid var(--rule)}
+.b-ghost:hover{border-color:var(--muted)}
+.b:disabled{opacity:.45;cursor:default}
+button:focus-visible,.check input:focus-visible,input[type=range]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.play{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px 12px;flex:1 1 380px;min-width:0}
+.scrub{flex:1 1 200px;min-width:0}
+.scrub-row{clear:both;display:flex;align-items:center;gap:10px}
+.scrub input{flex:1;min-width:0;accent-color:var(--accent)}
+.scrub output{font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums}
+
+.stage{overflow-x:auto;padding-block:4px 10px}
+.hint{font-family:var(--mono);font-size:12px;color:var(--muted);margin:8px 0 0;max-width:110ch}
+
+.notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr));gap:30px 44px;margin-top:38px;padding-top:26px;border-top:1px solid var(--rule)}
+.note h2{font-size:20px;line-height:1.25;font-weight:600;letter-spacing:-.01em;margin:0 0 8px;text-wrap:balance}
+.note p,.note li{color:var(--muted);max-width:62ch;margin:0}
+.note ol,.note ul{margin:0;padding-left:1.3em;display:grid;gap:8px}
+.note li::marker{font-family:var(--mono);font-size:12px;color:var(--ink)}
+.note code{font-family:var(--mono);font-size:.84em;color:var(--ink);background:var(--surface);border:1px solid var(--rule);padding:0 4px;border-radius:3px;overflow-wrap:anywhere}
+.note b{color:var(--ink);font-weight:600}
+
+/* ---------- VS Code-fönstret ---------- */
+.vsc{
+  --ui:"Segoe WPC","Segoe UI",system-ui,-apple-system,Ubuntu,"Droid Sans",sans-serif;
+  --mono-ui:"Cascadia Mono",Consolas,"JetBrains Mono","DejaVu Sans Mono",monospace;
+  --bg-editor:#1F1F1F; --bg-side:#181818; --bg-panel:#181818;
+  --fg:#CCCCCC; --fg-muted:#9D9D9D; --border:#2B2B2B; --focus:#0078D4; --tab-top:#0078D4; --link:#4DAAFC;
+  --hover-bg:#202020; --hover-border:#454545; --hover-shadow:0 2px 8px rgba(0,0,0,.36);
+  --sel-bg:#04395E; --sel-fg:#FFFFFF; --sel-outline:#0078D4; --row-hover:#2A2D2E;
+  --c-blue:#3794FF; --c-orange:#D18616; --c-green:#89D185; --c-purple:#B180D7; --c-yellow:#CCA700; --c-red:#F14C4C; --c-grey:#6E7681;
+  --c-hatch:rgba(204,204,204,.34); --c-lines:rgba(204,204,204,.07); --now:#4DAAFC;
+  --code-bg:rgba(255,255,255,.08); --btn2-bg:#313131; --btn2-fg:#CCCCCC; --btn2-border:transparent; --btn2-hover:#3C3C3C;
+  --sb-hover:rgba(255,255,255,.12); --remote-bg:#0078D4; --remote-fg:#FFFFFF; --frame:#3C3C3C;
+  --warn-ic:#CCA700; --ok:#89D185;
+  --syn-h:#569CD6; --syn-b:#D7BA7D; --ln:#6E7681;
+  --term-fg:#CCCCCC; --term-prompt:#23D18B; --term-path:#3B8EEA; --term-dim:#8B949E; --term-acc:#D7BA7D;
+  position:relative;width:1240px;height:720px;display:grid;grid-template-rows:30px minmax(0,1fr) 22px;
+  font-family:var(--ui);font-size:13px;line-height:1.4;color:var(--fg);background:var(--bg-editor);
+  border:1px solid var(--frame);border-radius:8px;overflow:hidden;box-shadow:var(--shadow);
+}
+.vsc[data-vs="light"]{
+  --bg-editor:#FFFFFF; --bg-side:#F8F8F8; --bg-panel:#F8F8F8;
+  --fg:#3B3B3B; --fg-muted:#676767; --border:#E5E5E5; --focus:#005FB8; --tab-top:#005FB8; --link:#005FB8;
+  --hover-bg:#F8F8F8; --hover-border:#C8C8C8; --hover-shadow:0 2px 8px rgba(0,0,0,.16);
+  --sel-bg:#DCE7F4; --sel-fg:#1F1F1F; --sel-outline:#005FB8; --row-hover:#EDEDED;
+  --c-blue:#1A85FF; --c-orange:#C27400; --c-green:#388A34; --c-purple:#652D90; --c-yellow:#BF8803; --c-red:#E51400; --c-grey:#8C8C8C;
+  --c-hatch:rgba(59,59,59,.36); --c-lines:rgba(0,0,0,.07); --now:#005FB8;
+  --code-bg:rgba(0,0,0,.06); --btn2-bg:#E5E5E5; --btn2-fg:#3B3B3B; --btn2-border:transparent; --btn2-hover:#CCCCCC;
+  --sb-hover:rgba(0,0,0,.08); --remote-bg:#005FB8; --remote-fg:#FFFFFF; --frame:#CFCFCF;
+  --warn-ic:#BF8803; --ok:#388A34;
+  --syn-h:#0F4A85; --syn-b:#800000; --ln:#6E7681;
+  --term-fg:#3B3B3B; --term-prompt:#107C10; --term-path:#0451A5; --term-dim:#6A6A6A; --term-acc:#795E26;
+}
+.vsc[data-vs="hc"]{
+  --bg-editor:#000000; --bg-side:#000000; --bg-panel:#000000;
+  --fg:#FFFFFF; --fg-muted:#D9D9D9; --border:#6FC3DF; --focus:#F38518; --tab-top:#F38518; --link:#21A6FF;
+  --hover-bg:#0C141F; --hover-border:#6FC3DF; --hover-shadow:none;
+  --sel-bg:transparent; --sel-fg:#FFFFFF; --sel-outline:#F38518; --row-hover:transparent;
+  --c-blue:#3794FF; --c-orange:#D18616; --c-green:#89D185; --c-purple:#B180D7; --c-yellow:#FFD700; --c-red:#F48771; --c-grey:#A6A6A6;
+  --c-hatch:rgba(255,255,255,.62); --c-lines:rgba(255,255,255,.28); --now:#21A6FF;
+  --code-bg:#1A1A1A; --btn2-bg:#000000; --btn2-fg:#FFFFFF; --btn2-border:#6FC3DF; --btn2-hover:#0C141F;
+  --sb-hover:rgba(255,255,255,.16); --remote-bg:#000000; --remote-fg:#FFFFFF; --frame:#6FC3DF;
+  --warn-ic:#FFD700; --ok:#89D185;
+  --syn-h:#6FC3DF; --syn-b:#FFFFFF; --ln:#FFFFFF;
+  --term-fg:#FFFFFF; --term-prompt:#23D18B; --term-path:#3B8EEA; --term-dim:#D9D9D9; --term-acc:#FFD700;
+}
+.vsc button{font:inherit;color:inherit}
+.vsc button:focus-visible,.vsc [tabindex]:focus-visible{outline:1px solid var(--focus);outline-offset:-1px}
+.vsc svg{flex:none}
+
+.v-title{display:grid;grid-template-columns:1fr minmax(0,380px) 1fr;align-items:center;background:var(--bg-side);border-bottom:1px solid var(--border);font-size:12px;color:var(--fg-muted)}
+.v-menu{display:flex;align-items:center;gap:2px;padding-left:10px;white-space:nowrap;overflow:hidden}
+.v-menu span{padding:2px 6px}
+.v-logo{width:15px;height:15px;margin-right:6px;color:var(--tab-top)}
+.v-cc{height:22px;border:1px solid var(--border);border-radius:6px;display:flex;align-items:center;justify-content:center;gap:6px;color:var(--fg);background:var(--bg-side)}
+.v-win{justify-self:end;display:flex}
+.v-win span{width:44px;height:30px;display:grid;place-items:center}
+
+.v-body{display:grid;grid-template-columns:48px minmax(0,1fr);min-height:0}
+.v-act{background:var(--bg-side);border-right:1px solid var(--border);display:flex;flex-direction:column;color:var(--fg-muted)}
+.v-act span{height:48px;display:grid;place-items:center}
+.v-act span.on{color:var(--fg);box-shadow:inset 2px 0 0 var(--tab-top)}
+.v-act svg{width:22px;height:22px}
+
+.v-main{display:grid;grid-template-rows:35px minmax(0,1fr) 440px;min-width:0;min-height:0}
+.v-tabs{display:flex;background:var(--bg-side);border-bottom:1px solid var(--border)}
+.v-tab{padding:0 14px;display:flex;align-items:center;gap:6px;color:var(--fg-muted);border-right:1px solid var(--border);white-space:nowrap}
+.v-tab.on{background:var(--bg-editor);color:var(--fg);box-shadow:inset 0 1px 0 var(--tab-top);margin-bottom:-1px}
+.v-tab i{font-style:normal;font-size:11px;font-weight:700;color:var(--c-blue)}
+.v-editor{background:var(--bg-editor);font-family:var(--mono-ui);font-size:13px;line-height:20px;padding-top:6px;overflow:hidden}
+.ln{display:flex;white-space:pre}
+.ln i{font-style:normal;width:56px;text-align:right;padding-right:24px;color:var(--ln);flex:none}
+.md-h{color:var(--syn-h);font-weight:700}
+.md-b{color:var(--syn-b);font-weight:700}
+
+.v-panel{border-top:1px solid var(--border);background:var(--bg-panel);display:grid;grid-template-rows:35px minmax(0,1fr);min-height:0}
+.v-ptabs{display:flex;align-items:stretch;gap:18px;padding:0 12px;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--fg-muted)}
+.v-ptabs > span,.v-ptabs > button{display:flex;align-items:center;border:0;background:none;padding:0;cursor:default;text-transform:inherit;letter-spacing:inherit;font-size:inherit;color:inherit}
+.v-ptabs > button{cursor:pointer}
+.v-ptabs > button:hover{color:var(--fg)}
+.v-ptabs .on{color:var(--fg);box-shadow:inset 0 -1px 0 var(--fg)}
+.v-pbody{display:grid;grid-template-columns:minmax(0,1fr);min-height:0}
+.vsc[data-place="split"] .v-pbody{grid-template-columns:minmax(0,1fr) 400px}
+.v-term{font-family:var(--mono-ui);font-size:12px;line-height:18px;color:var(--term-fg);padding:4px 14px;overflow:hidden;white-space:pre;min-width:0;margin:0}
+.vsc[data-place="full"][data-tab="sw"] .v-term,.vsc[data-place="full"][data-tab="term"] .sw{display:none}
+.vsc[data-place="split"] .sw{border-left:1px solid var(--border)}
+.t-p{color:var(--term-prompt)} .t-path{color:var(--term-path)} .t-dim{color:var(--term-dim)} .t-acc{color:var(--term-acc)}
+.t-cur{background:var(--term-fg);display:inline-block;width:7px;height:14px;vertical-align:-2px}
+
+.v-status{display:flex;align-items:stretch;background:var(--bg-side);border-top:1px solid var(--border);color:var(--fg);font-size:12px;white-space:nowrap}
+.sb{display:flex;align-items:center;gap:4px;padding:0 7px;border:0;background:transparent}
+.sb-remote{background:var(--remote-bg);color:var(--remote-fg);padding:0 10px}
+.sb-spacer{flex:1}
+.sb-sw{cursor:pointer;font-variant-numeric:tabular-nums}
+.sb-sw:hover{background:var(--sb-hover)}
+.sb-sw[hidden]{display:none}
+
+/* ---------- subagent-watch-vyn ---------- */
+.sw{--lc:190px;--pad:12px;--rowh:32px;position:relative;display:grid;grid-template-rows:auto minmax(0,1fr) auto auto auto;min-height:0;min-width:0;font-size:12px;line-height:1.35;color:var(--fg)}
+.sw[data-narrow="true"]{--lc:118px;--pad:10px;--rowh:24px}
+.k-read{background:var(--c-blue)}
+.k-term{background:var(--c-orange)}
+.k-write{background:var(--c-green)}
+.k-think{background:var(--c-purple)}
+.k-other{background:var(--c-grey)}
+.k-wait{background:repeating-linear-gradient(135deg,var(--c-hatch) 0 1.5px,transparent 1.5px 5px)}
+.k-you{background:repeating-linear-gradient(135deg,var(--c-yellow) 0 1.5px,transparent 1.5px 4px);box-shadow:inset 0 0 0 1px var(--c-yellow)}
+
+.sw-legend{display:flex;flex-wrap:wrap;align-items:center;gap:2px 12px;padding:5px 12px 4px;font-size:11px;color:var(--fg-muted);border-bottom:1px solid var(--border)}
+.lg{display:inline-flex;align-items:center;gap:5px;border-radius:2px;white-space:nowrap}
+.lg i{display:inline-block;width:12px;height:8px;border-radius:2px}
+.lg-tip{text-decoration:underline dotted;text-underline-offset:3px;cursor:help}
+.lg-sep{width:1px;height:10px;background:var(--border)}
+.lg i.mk-fail{width:7px;height:7px;border-radius:50%;background:var(--c-red)}
+.lg i.mk-fade{-webkit-mask-image:linear-gradient(to right,#000 30%,transparent);mask-image:linear-gradient(to right,#000 30%,transparent);width:16px}
+.lg i.mk-done{width:7px;height:7px;border-radius:50%;background:var(--fg)}
+
+.sw-scroll{overflow:auto;min-height:0}
+.sw-cur{position:relative}
+.sw-head{display:grid;grid-template-columns:var(--lc) minmax(0,1fr);height:24px;border-bottom:1px solid var(--border)}
+.sw-head .sw-lc{display:flex;align-items:center;padding-left:12px;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--fg-muted);border-right:1px solid var(--border)}
+.sw-axis{position:relative;margin-inline:var(--pad)}
+.sw-axis span{position:absolute;bottom:5px;transform:translateX(-50%);font-family:var(--mono-ui);font-size:10px;color:var(--fg-muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+.sw-axis span.ax-first{transform:none}
+.sw-axis span.ax-end{left:auto;right:0;transform:none;color:var(--fg)}
+
+.sw-row{position:relative;z-index:1;display:grid;grid-template-columns:var(--lc) minmax(0,1fr);height:var(--rowh);border-bottom:1px solid var(--border);outline:none}
+.sw-row .sw-lc{display:flex;align-items:center;gap:5px;min-width:0;overflow:hidden;padding-left:calc(8px + var(--d,0) * 14px);padding-right:6px;border-right:1px solid var(--border);cursor:pointer}
+.sw-row:hover .sw-lc{background:var(--row-hover)}
+.sw-row[aria-selected="true"] .sw-lc{background:var(--sel-bg);color:var(--sel-fg)}
+.sw-row:focus-visible .sw-lc{outline:1px solid var(--sel-outline);outline-offset:-1px}
+.vsc[data-vs="hc"] .sw-row[aria-selected="true"] .sw-lc{outline:1px dashed var(--sel-outline);outline-offset:-1px}
+.vsc[data-vs="hc"] .sw-row:hover .sw-lc{outline:1px dashed var(--sel-outline);outline-offset:-1px}
+.sw-tw{flex:none;width:10px;display:grid;place-items:center;font-size:9px;color:var(--fg-muted)}
+.sw-elbow{flex:none;width:8px;height:8px;margin-top:-7px;border-left:1px solid var(--fg-muted);border-bottom:1px solid var(--fg-muted);opacity:.7}
+.sw[data-narrow="true"] .sw-elbow{margin-top:-5px}
+.sw-names{display:grid;min-width:0;line-height:14px}
+.sw-ty{font-weight:600;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sw-ds{font-size:11px;color:var(--fg-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sw-row[aria-selected="true"] .sw-ds{color:inherit;opacity:.78}
+.sw[data-narrow="true"] .sw-ds{display:none}
+.sw-row.enter{animation:rowIn .2s ease-out}
+@keyframes rowIn{from{opacity:0}to{opacity:1}}
+
+.sw-tr{position:relative;min-width:0;padding-inline:var(--pad);overflow:hidden}
+.sw-track{position:relative;height:100%}
+.seg{position:absolute;top:50%;height:12px;margin-top:-6px;border-radius:3px;min-width:2px;cursor:default}
+.sw[data-narrow="true"] .seg{height:10px;margin-top:-5px}
+.seg.k-wait{display:flex;align-items:center;overflow:hidden}
+.seg-lb{margin-left:5px;padding:0 4px;border-radius:2px;background:var(--bg-panel);font-size:10.5px;line-height:12px;color:var(--fg-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
+.sw[data-narrow="true"] .seg-lb{display:none}
+.seg.fail{box-shadow:inset 0 -2px 0 var(--c-red)}
+.seg.fail::after{content:"";position:absolute;right:-3px;top:-4px;width:7px;height:7px;border-radius:50%;background:var(--c-red);box-shadow:0 0 0 1.5px var(--bg-panel)}
+.seg.fade{-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 18px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 18px),transparent)}
+.seg.hov{outline:1px solid var(--fg);outline-offset:1px}
+.seg.enter{animation:segIn .25s ease-out}
+@keyframes segIn{from{filter:brightness(1.7)}to{filter:none}}
+.cap{position:absolute;top:50%;width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;background:var(--fg);box-shadow:0 0 0 2px var(--bg-panel);pointer-events:none}
+.cap.abort{width:auto;height:auto;margin:0;background:none;box-shadow:none;transform:translate(-50%,-50%);font-size:10px;line-height:1;font-weight:700;color:var(--fg)}
+.cap.unknown{width:9px;height:9px;margin:-4.5px 0 0 -4.5px;background:var(--bg-panel);border:1px dashed var(--fg-muted);box-shadow:none}
+.tlabel{position:absolute;top:50%;transform:translateY(-50%);margin-left:9px;padding:0 3px;background:var(--bg-panel);font-size:10.5px;color:var(--fg-muted);white-space:nowrap;pointer-events:none}
+.sw[data-ended="true"] .sw-cur .sw-names,.sw[data-ended="true"] .sw-cur .sw-track{opacity:.55}
+
+.sw-under,.sw-over{position:absolute;top:0;bottom:0;left:calc(var(--lc) + var(--pad));right:var(--pad);pointer-events:none}
+.sw-under{z-index:0}
+.sw-over{z-index:3}
+.gl{position:absolute;top:24px;bottom:0;width:1px;background:var(--c-lines)}
+.now{position:absolute;top:17px;bottom:0;width:1px;margin-left:-.5px;background:var(--now)}
+.now::before{content:"";position:absolute;top:-3px;left:-3px;width:7px;height:7px;border-radius:50%;background:var(--now)}
+.sw-links{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.lk{stroke:var(--c-purple);stroke-width:1.25;fill:none}
+
+.sw-turn{height:22px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:5px;padding-left:8px;font-size:11.5px;color:var(--fg-muted);cursor:pointer;outline:none;white-space:nowrap;overflow:hidden}
+.sw-turn:hover{background:var(--row-hover);color:var(--fg)}
+.sw-turn[aria-selected="true"]{background:var(--sel-bg);color:var(--sel-fg)}
+.sw-turn:focus-visible{outline:1px solid var(--sel-outline);outline-offset:-1px}
+.vsc[data-vs="hc"] .sw-turn[aria-selected="true"]{outline:1px dashed var(--sel-outline);outline-offset:-1px}
+
+.sw-detail{border-top:1px solid var(--border);padding:6px 12px 7px;display:grid;gap:1px;min-height:60px;align-content:start}
+.dt-1 b{font-weight:600}
+.dt-1,.dt-2{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dt-3{color:var(--fg-muted);font-size:11px;font-variant-numeric:tabular-nums}
+.sw code{font-family:var(--mono-ui);font-size:11px;background:var(--code-bg);padding:0 3px;border-radius:3px}
+.chip{display:inline-block;width:11px;height:8px;border-radius:2px;margin-right:5px;vertical-align:0}
+.nosave{font-style:italic;color:var(--fg-muted)}
+.sw .dim{color:var(--fg-muted)}
+.sw[data-hover="true"] .sw-detail{box-shadow:inset 2px 0 0 var(--focus)}
+.sw-others{border-top:1px solid var(--border);padding:3px 12px;font-size:11.5px;color:var(--fg-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sw-status{border-top:1px solid var(--border);padding:3px 12px 4px;min-height:24px;display:flex;flex-wrap:wrap;align-items:center;gap:2px 6px;font-size:11.5px;color:var(--fg-muted);font-variant-numeric:tabular-nums}
+.dot-ok{flex:none;width:7px;height:7px;border-radius:50%;background:var(--ok)}
+.ic-warn{flex:none;width:14px;height:14px;color:var(--warn-ic)}
+.st-strong{color:var(--fg)}
+.btn2{font-size:11px !important;line-height:16px;padding:0 7px;border-radius:2px;border:1px solid var(--btn2-border);background:var(--btn2-bg);color:var(--btn2-fg) !important;cursor:pointer}
+.btn2:hover{background:var(--btn2-hover)}
+.sw-tip{position:absolute;z-index:10;max-width:290px;padding:5px 8px;background:var(--hover-bg);border:1px solid var(--hover-border);box-shadow:var(--hover-shadow);border-radius:3px;font-size:12px;line-height:1.4;color:var(--fg);pointer-events:none}
+.sw-tip b{font-weight:600}
+
+.vsc.reduce *,.vsc.reduce *::before,.vsc.reduce *::after{animation:none !important;transition:none !important}
+@media (prefers-reduced-motion: reduce){ .vsc *{animation:none !important;transition:none !important} }
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Klickbar skiss 1 · godkänd 17 sep 2026 · exempeldata</p>
+    <h1>subagent-watch</h1>
+    <p class="lede">Vyn i bottenpanelen enligt Q14 och Q26–Q30, i layouten från din bild. Turen spelas upp i realtid. Klicka på en rad för att se vem som startade vem, håll musen över en bit för att se anropet och byt läge för att se hur vyn visar det som är okänt. Alla sessioner, sökvägar och tider är påhittade.</p>
+  </header>
+
+  <div class="controls">
+    <fieldset class="seg">
+      <legend>Läge</legend>
+      <div class="seg-row">
+        <input type="radio" name="mode" id="mode-play" value="play" checked><label for="mode-play">Tur pågår</label>
+        <input type="radio" name="mode" id="mode-unknown" value="unknown"><label for="mode-unknown">Okänt läge</label>
+        <input type="radio" name="mode" id="mode-ended" value="ended"><label for="mode-ended">Avbruten session</label>
+      </div>
+    </fieldset>
+    <fieldset class="seg">
+      <legend>Statusrad</legend>
+      <div class="seg-row">
+        <input type="radio" name="status" id="status-ok" value="ok" checked><label for="status-ok">Aktivt</label>
+        <input type="radio" name="status" id="status-changed" value="changed"><label for="status-changed">Insamlaren ändrad</label>
+        <input type="radio" name="status" id="status-silent" value="silent"><label for="status-silent">Inga händelser</label>
+        <input type="radio" name="status" id="status-dropped" value="dropped"><label for="status-dropped">Kastade händelser</label>
+      </div>
+    </fieldset>
+    <fieldset class="seg">
+      <legend>Placering</legend>
+      <div class="seg-row">
+        <input type="radio" name="place" id="place-full" value="full" checked><label for="place-full">Egen flik</label>
+        <input type="radio" name="place" id="place-split" value="split"><label for="place-split">Bredvid terminalen</label>
+      </div>
+    </fieldset>
+    <fieldset class="seg">
+      <legend>Tema</legend>
+      <div class="seg-row">
+        <input type="radio" name="theme" id="theme-dark" value="dark" checked><label for="theme-dark">Mörkt</label>
+        <input type="radio" name="theme" id="theme-light" value="light"><label for="theme-light">Ljust</label>
+        <input type="radio" name="theme" id="theme-hc" value="hc"><label for="theme-hc">Högkontrast</label>
+      </div>
+    </fieldset>
+    <label class="check" for="reduce"><input type="checkbox" id="reduce"> Minskad rörelse</label>
+    <div class="play">
+      <button class="b b-primary" id="play" type="button">Pausa</button>
+      <button class="b b-ghost" id="restart" type="button">Från början</button>
+      <div class="scrub">
+        <label class="ctl-label" for="scrub">Tid i turen</label>
+        <div class="scrub-row"><input type="range" id="scrub" min="0" max="34" step="0.1" value="17"><output id="clock" for="scrub">14:32:17</output></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stage">
+    <div class="vsc" id="vsc" data-vs="dark" data-place="full" data-tab="sw">
+      <div class="v-title">
+        <div class="v-menu">
+          <svg class="v-logo" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M11.5 1.8 5 8l6.5 6.2M11.5 1.8 14 3v10l-2.5 1.2M5 8 2.2 5.6 1.5 6.3v3.4l.7.7L5 8"/></svg>
+          <span>File</span><span>Edit</span><span>Selection</span><span>View</span><span>Go</span><span>Run</span><span>Terminal</span><span>Help</span>
+        </div>
+        <div class="v-cc"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3.5 3.5"/></svg>subagent-watch [WSL: Ubuntu]</div>
+        <div class="v-win" aria-hidden="true"><span>&#x2013;</span><span>&#x25A1;</span><span>&#x2715;</span></div>
+      </div>
+      <div class="v-body">
+        <div class="v-act" aria-hidden="true">
+          <span class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M14 3H7a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1V8l-5-5Z"/><path d="M14 3v5h5"/></svg></span>
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 6 6"/></svg></span>
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="6" cy="5" r="2"/><circle cx="6" cy="19" r="2"/><circle cx="18" cy="8" r="2"/><path d="M6 7v10M18 10c0 5-8 3-11.5 7.5"/></svg></span>
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="11" width="7" height="7"/><rect x="11" y="11" width="7" height="7"/><rect x="11" y="3" width="7" height="7" transform="rotate(12 14.5 6.5)"/><rect x="3" y="3" width="7" height="7"/></svg></span>
+        </div>
+        <div class="v-main">
+          <div class="v-tabs" aria-hidden="true">
+            <div class="v-tab on"><i>M&#x2193;</i>subagent-watch-sammanfattning.md</div>
+            <div class="v-tab"><i>M&#x2193;</i>verifierat-hooks.md</div>
+          </div>
+          <div class="v-editor" aria-hidden="true">
+            <div class="ln"><i>40</i><span class="md-h">### Vyn</span></div>
+            <div class="ln"><i>41</i><span>| # | Beslut |</span></div>
+            <div class="ln"><i>42</i><span>|---|---|</span></div>
+            <div class="ln"><i>43</i><span>| Q4 | <span class="md-b">**Placering:**</span> en egen webbvy i bottenpanelen, som går att dra bredvid Terminal … |</span></div>
+            <div class="ln"><i>44</i><span>| Q14 | <span class="md-b">**Form:**</span> en tidslinje med verktygsrytm (C2) i layouten från din bild … |</span></div>
+            <div class="ln"><i>45</i><span>| Q26 | <span class="md-b">**Kategorier:**</span> Läsa, Terminal, Skriva, Vänta, Väntar på dig, Tänka och Övrigt … |</span></div>
+            <div class="ln"><i>46</i><span>| Q27 | <span class="md-b">**Tidsaxeln**</span> visar den senaste turen, från din prompt tills Claude och alla agenter … |</span></div>
+            <div class="ln"><i>47</i><span>| Q29 | <span class="md-b">**Detaljpanelen**</span> visar den markerade raden, annars huvudsessionen … |</span></div>
+          </div>
+          <div class="v-panel">
+            <div class="v-ptabs">
+              <span>Problems</span><span>Output</span><span>Debug Console</span>
+              <button type="button" id="tab-term">Terminal</button>
+              <span>Tokeniser</span>
+              <button type="button" id="tab-sw" class="on">Subagent-watch</button>
+            </div>
+            <div class="v-pbody">
+<pre class="v-term" aria-hidden="true"><span class="t-p">lullo@WSL</span>:<span class="t-path">~/projects/subagent-watch</span>$ claude
+<span class="t-dim">╭──────────────────────────────────────────────╮
+│ ✻ Claude Code                                │
+╰──────────────────────────────────────────────╯</span>
+
+&gt; Ta reda på hur pluginet installeras i skills-mappen och uppdatera sammanfattningen
+
+<span class="t-acc">●</span> Agent(Kartlägg hook-dokumentationen)
+  <span class="t-dim">⎿  Explore · klar</span>
+<span class="t-acc">●</span> Agent(Testa installationen av pluginet i skills-mappen)
+  <span class="t-dim">⎿  Körs i bakgrunden</span>
+
+<span class="t-cur"></span></pre>
+              <div class="sw" id="sw" data-narrow="false" data-ended="false">
+                <div class="sw-legend" id="sw-legend"></div>
+                <div class="sw-scroll">
+                  <div class="sw-cur" id="sw-cur">
+                    <div class="sw-under" id="sw-under"></div>
+                    <div class="sw-head"><div class="sw-lc">Session</div><div class="sw-axis" id="sw-axis"></div></div>
+                    <div id="sw-rows" role="listbox" aria-label="Sessioner och agenter"></div>
+                    <div class="sw-over"><svg class="sw-links" id="sw-links" aria-hidden="true"></svg><div class="now" id="sw-now"></div></div>
+                  </div>
+                  <div id="sw-turns" role="listbox" aria-label="Äldre turer"></div>
+                </div>
+                <div class="sw-detail" id="sw-detail" aria-live="polite"></div>
+                <div class="sw-others">Andra sessioner · tokeniser · 1 agent kör</div>
+                <div class="sw-status" id="sw-status"></div>
+                <div class="sw-tip" id="sw-tip" role="tooltip" hidden></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="v-status">
+        <span class="sb sb-remote"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m2 6 4-4M2 6l4 4M14 10l-4-4M14 10l-4 4"/></svg>WSL: Ubuntu</span>
+        <span class="sb"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><circle cx="4.5" cy="3.5" r="1.5"/><circle cx="4.5" cy="12.5" r="1.5"/><circle cx="11.5" cy="5.5" r="1.5"/><path d="M4.5 5v6M11.5 7c0 3-5 2-7 4"/></svg>main</span>
+        <span class="sb">&#x2297; 0 &#x26A0; 0</span>
+        <span class="sb-spacer"></span>
+        <button class="sb sb-sw" id="sb-sw" type="button" title="Agenter som kör i subagent-watch. Klicka för att öppna vyn."></button>
+        <span class="sb">5h 64% · v 31%</span>
+        <span class="sb">Ln 44, Col 1</span>
+        <span class="sb">UTF-8</span>
+        <span class="sb">Markdown</span>
+      </div>
+    </div>
+  </div>
+  <p class="hint">Klicka på en rad eller använd pilarna upp och ner för att markera den. Håll musen över en bit, eller över Tänka i förklaringen. Klicka på en ihopfälld tur under tidslinjen för att fälla ut den. Klicka på ⚙ i statusfältet för att öppna vyn när Terminal är vald.</p>
+
+  <section class="notes">
+    <div class="note">
+      <p class="eyebrow">Läge</p>
+      <h2 id="note-mode-title"></h2>
+      <p id="note-mode-text"></p>
+    </div>
+    <div class="note">
+      <p class="eyebrow">Statusrad</p>
+      <h2 id="note-status-title"></h2>
+      <p id="note-status-text"></p>
+    </div>
+    <div class="note">
+      <p class="eyebrow">Integritet · Q8, Q31, Q33, Q34</p>
+      <h2>Det detaljpanelen aldrig visar</h2>
+      <ul>
+        <li><b>Bash</b> visar anropets beskrivning, aldrig kommandot.</li>
+        <li><b>Grep</b> visar bara att mönstret inte sparas, och <b>WebFetch</b> bara värdnamnet.</li>
+        <li><b>Väntar på dig</b> visar bara verktygsnamn och tid.</li>
+        <li><b>Huvudsessionen</b> har ingen beskrivning, eftersom prompten aldrig sparas. Raden visar projektet och början på sessionens id.</li>
+      </ul>
+    </div>
+    <div class="note">
+      <p class="eyebrow">Besvarat 17 sep 2026</p>
+      <h2>Fem beslut om skissen</h2>
+      <ol>
+        <li><b>Tänka</b> visas som en hel bit.</li>
+        <li><b>Linjerna</b> går både till föräldern och till agenterna som den markerade raden startade. Huvudsessionen är markerad från början och har ingen förälder, så med bara föräldern skulle vyn börja utan linjer.</li>
+        <li><b>Äldre turer</b> går att fälla ut, en tur i taget. Den utfällda turen tar över tidsaxeln, och övriga turer ligger ihopfällda under den med den nyaste först. Klara agenter finns kvar tills sessionen slutar (Q7), och det är bara till nytta om de går att se.</li>
+        <li><b>Tidsaxeln</b> växer i steg: 30 s, 1 min, 2 min, 3 min, 5 min, 10 min och så vidare, med 8 % luft efter steget. Den hoppar bara när turen passerar ett steg, så inget krymper varje sekund (Q10). När en agent hamnar i okänt läge går axeln tillbaka till den senaste händelsen och slutar med klockslaget för nu.</li>
+        <li><b>Statusfältet</b> visar <code>⚙ ?</code> när den enda agenten är i okänt läge, och till exempel <code>⚙ 1 ?</code> när en annan agent kör samtidigt.</li>
+      </ol>
+    </div>
+  </section>
+</div>
+
+<script>
+(() => {
+  /* ---------- Exempeldata: tre turer i en påhittad session ---------- */
+  const H = (h, m, s) => h * 3600 + m * 60 + s;
+  const CUT = { unknown: 20.3, ended: 22.4 };   // gäller den senaste turen
+  const STALE_NOW = 10 * 60 + 41;               // "nu" i läget Okänt läge: 14:42:41
+  const STALE_LEN = 3.5;
+  const PLAY_END = 34;                          // uppspelningen slutar strax efter turen
+  const STEPS = [[30, 10], [60, 15], [120, 30], [180, 30], [300, 60], [600, 120], [900, 180], [1800, 300], [3600, 600]];
+  const AIR = 1.08;                             // luft efter axelns steg
+
+  const CATS = {
+    read:  { label: 'Läsa', tip: 'Read, Grep, Glob, WebFetch och WebSearch.' },
+    term:  { label: 'Terminal', tip: 'Bash. Bara anropets beskrivning sparas, aldrig kommandot.' },
+    write: { label: 'Skriva', tip: 'Edit, Write och NotebookEdit.' },
+    think: { label: 'Tänka', tip: 'Tiden mellan två verktygsanrop under en tur. Hooks säger inget om vad som händer då, så det kan vara modellen som tänker men också väntan på API:t.' },
+    wait:  { label: 'Vänta', tip: 'Väntar på en agent som raden själv har startat.' },
+    you:   { label: 'Väntar på dig', tip: 'Från att Claude Code frågar om lov tills du har svarat. Bara tid och verktygsnamn sparas.' },
+    other: { label: 'Övrigt', tip: 'Andra verktyg, till exempel TodoWrite och TaskStop.' },
+  };
+
+  const MAIN_DESC = 'subagent-watch · 9f5e56ac';
+  // k: kategori. Luckor mellan bitarna räknas ut och blir Tänka. ask: frågan före samma anrop.
+  const TURN_DATA = [
+    {
+      id: 'cur', base: H(14, 32, 0),
+      agents: [
+        { id: 'main', type: 'huvudsession', desc: MAIN_DESC, depth: 0, parent: null, start: 0, end: 32.0 },
+        { id: 'A', type: 'Explore', desc: 'Kartlägg hook-dokumentationen', depth: 1, parent: 'main', start: 1.95, end: 13.0 },
+        { id: 'B', type: 'general-purpose', desc: 'Testa installationen av pluginet i skills-mappen', depth: 1, parent: 'main', start: 2.95, end: 27.0, bg: true },
+        { id: 'C', type: 'Explore', desc: 'Läs schemat för plugin.json', depth: 2, parent: 'B', start: 10.65, end: 19.1 },
+      ],
+      pieces: {
+        main: [
+          { s: 1.9, e: 13.1, k: 'wait', tool: 'Agent', agent: 'A' },
+          { s: 2.9, e: 2.9, k: 'other', tool: 'Agent', agent: 'B', hidden: true },
+          { s: 13.3, e: 13.5, k: 'other', tool: 'TodoWrite' },
+          { s: 14.3, e: 14.8, k: 'read', tool: 'Read', d: 'docs/verifierat-hooks.md' },
+          { s: 15.9, e: 27.0, k: 'wait', agent: 'B', afterStop: true },
+          { s: 28.2, e: 30.4, k: 'you', tool: 'Edit', ask: true },
+          { s: 30.4, e: 30.7, k: 'write', tool: 'Edit', d: 'docs/subagent-watch-sammanfattning.md' },
+        ],
+        A: [
+          { s: 3.4, e: 3.6, k: 'read', tool: 'Glob', d: 'docs/**/*.md' },
+          { s: 4.8, e: 5.4, k: 'read', tool: 'Read', d: 'docs/verifierat-hooks.md' },
+          { s: 6.9, e: 8.1, k: 'term', tool: 'Bash', d: 'Räkna händelser per typ i spike-körningarna' },
+          { s: 9.0, e: 10.6, k: 'read', tool: 'WebFetch', d: 'code.claude.com' },
+          { s: 11.3, e: 11.5, k: 'read', tool: 'Grep' },
+        ],
+        B: [
+          { s: 4.4, e: 4.9, k: 'read', tool: 'Read', d: 'spike/log-hook.mjs' },
+          { s: 6.2, e: 9.4, k: 'term', tool: 'Bash', d: 'Starta en testsession med pluginet' },
+          { s: 10.6, e: 19.2, k: 'wait', tool: 'Agent', agent: 'C' },
+          { s: 20.3, e: 23.9, k: 'term', tool: 'Bash', d: 'Kör hook-testerna', fail: true },
+          { s: 24.8, e: 25.4, k: 'write', tool: 'Write', d: 'spike/runs/06-plugin.jsonl' },
+        ],
+        C: [
+          { s: 12.0, e: 12.4, k: 'read', tool: 'Read', d: '~/.claude/skills/tokeniser/.claude-plugin/plugin.json' },
+          { s: 13.5, e: 13.7, k: 'read', tool: 'Glob', d: '~/.claude/skills/*/hooks/hooks.json' },
+          { s: 15.0, e: 16.4, k: 'read', tool: 'WebFetch', d: 'code.claude.com' },
+          { s: 17.0, e: 19.1, k: 'you', tool: 'Read', unknownEnd: true },
+        ],
+      },
+    },
+    {
+      id: 't2', base: H(14, 18, 7),
+      agents: [
+        { id: 'm2', type: 'huvudsession', desc: MAIN_DESC, depth: 0, parent: null, start: 0, end: 40.2 },
+        { id: 'D', type: 'Explore', desc: 'Hitta var Tokeniser kontrollerar kontrollsummor', depth: 1, parent: 'm2', start: 3.05, end: 31.4 },
+      ],
+      pieces: {
+        m2: [
+          { s: 1.2, e: 1.5, k: 'read', tool: 'Read', d: 'docs/subagent-watch-sammanfattning.md' },
+          { s: 3.0, e: 31.5, k: 'wait', tool: 'Agent', agent: 'D' },
+          { s: 34.0, e: 34.3, k: 'write', tool: 'Edit', d: 'docs/subagent-watch-sammanfattning.md' },
+        ],
+        D: [
+          { s: 5.0, e: 5.3, k: 'read', tool: 'Grep' },
+          { s: 7.2, e: 7.8, k: 'read', tool: 'Read', d: '~/projects/tokeniser/src/secure/fs.ts' },
+          { s: 10.0, e: 10.2, k: 'read', tool: 'Glob', d: '~/projects/tokeniser/src/**/*.ts' },
+          { s: 13.1, e: 13.9, k: 'read', tool: 'Read', d: '~/projects/tokeniser/scripts/connect.mjs' },
+          { s: 17.0, e: 19.5, k: 'term', tool: 'Bash', d: 'Visa git-loggen för connect.mjs' },
+          { s: 22.4, e: 22.9, k: 'read', tool: 'Read', d: '~/projects/tokeniser/docs/insamlarens-sakerhetskontrakt.md' },
+        ],
+      },
+    },
+    {
+      id: 't1', base: H(14, 5, 12),
+      agents: [
+        { id: 'm1', type: 'huvudsession', desc: MAIN_DESC, depth: 0, parent: null, start: 0, end: 124 },
+        { id: 'E', type: 'Explore', desc: 'Sammanfatta hooks-dokumentationen', depth: 1, parent: 'm1', start: 6.05, end: 58.2 },
+        { id: 'F', type: 'general-purpose', desc: 'Mät hur lång tid en hook tar i Node', depth: 1, parent: 'm1', start: 7.05, end: 111.5, bg: true },
+        { id: 'G', type: 'Explore', desc: 'Läs Nodes dokumentation om --permission', depth: 2, parent: 'F', start: 44.05, end: 79.5 },
+      ],
+      pieces: {
+        m1: [
+          { s: 2, e: 2.6, k: 'read', tool: 'Read', d: 'docs/verifierat-hooks.md' },
+          { s: 6, e: 58.5, k: 'wait', tool: 'Agent', agent: 'E' },
+          { s: 7, e: 7, k: 'other', tool: 'Agent', agent: 'F', hidden: true },
+          { s: 60, e: 60.3, k: 'other', tool: 'TodoWrite' },
+          { s: 63, e: 63.5, k: 'read', tool: 'Read', d: 'spike/runs/02-parallel.jsonl' },
+          { s: 70, e: 112, k: 'wait', agent: 'F', afterStop: true },
+          { s: 114, e: 120.5, k: 'you', tool: 'Write', ask: true },
+          { s: 120.5, e: 121, k: 'write', tool: 'Write', d: 'docs/verifierat-hooks.md' },
+        ],
+        E: [
+          { s: 9, e: 14, k: 'read', tool: 'WebFetch', d: 'code.claude.com' },
+          { s: 17, e: 18, k: 'read', tool: 'Read', d: 'docs/verifierat-hooks.md' },
+          { s: 22, e: 22.5, k: 'read', tool: 'Grep' },
+          { s: 27, e: 33, k: 'read', tool: 'WebFetch', d: 'code.claude.com' },
+          { s: 37, e: 37.4, k: 'read', tool: 'Grep' },
+          { s: 41, e: 42, k: 'read', tool: 'Read', d: 'spike/log-hook.mjs' },
+          { s: 46, e: 49, k: 'term', tool: 'Bash', d: 'Räkna rader per händelsetyp' },
+          { s: 52, e: 52.3, k: 'read', tool: 'Glob', d: 'spike/runs/*.jsonl' },
+        ],
+        F: [
+          { s: 10, e: 10.6, k: 'read', tool: 'Read', d: 'spike/log-hook.mjs' },
+          { s: 14, e: 14.8, k: 'write', tool: 'Write', d: 'spike/bench.mjs' },
+          { s: 18, e: 40, k: 'term', tool: 'Bash', d: 'Kör mätningen 200 gånger' },
+          { s: 44, e: 80, k: 'wait', tool: 'Agent', agent: 'G' },
+          { s: 84, e: 101, k: 'term', tool: 'Bash', d: 'Kör mätningen med --permission' },
+          { s: 104, e: 104.6, k: 'write', tool: 'Edit', d: 'spike/bench.mjs' },
+        ],
+        G: [
+          { s: 47, e: 53, k: 'read', tool: 'WebFetch', d: 'nodejs.org' },
+          { s: 57, e: 64, k: 'read', tool: 'WebFetch', d: 'nodejs.org' },
+          { s: 68, e: 68.5, k: 'read', tool: 'Read', d: 'spike/bench.mjs' },
+          { s: 72, e: 72.3, k: 'read', tool: 'Grep' },
+        ],
+      },
+    },
+  ];
+  const LATEST = TURN_DATA[0];
+  const byId = {};
+  for (const T of TURN_DATA) {
+    T.end = Math.max(...T.agents.map(a => a.end));
+    T.events = [
+      ...T.agents.flatMap(a => [a.start, a.end]),
+      ...Object.values(T.pieces).flat().flatMap(p => [p.s, p.e]),
+    ].sort((x, y) => x - y);
+    for (const a of T.agents) byId[a.id] = a;
+  }
+
+  /* ---------- Hjälpfunktioner ---------- */
+  let view = LATEST;          // turen som visas på tidsaxeln (Q27)
+  let axisLen = 30 * AIR;
+  let tickEvery = 10;
+  const two = n => String(n).padStart(2, '0');
+  const clockAt = (base, sec) => {
+    const s = base + Math.floor(sec);
+    return `${two(Math.floor(s / 3600))}:${two(Math.floor(s / 60) % 60)}:${two(s % 60)}`;
+  };
+  const clock = sec => clockAt(view.base, sec);
+  const dur = x => {
+    if (x < 10) return `${Math.max(0, x).toFixed(1).replace('.', ',')} s`;
+    const s = Math.floor(x);
+    return s < 60 ? `${s} s` : `${Math.floor(s / 60)} min ${s % 60} s`;
+  };
+  const offset = s => s < 60 ? `+${s} s` : s % 60 ? `+${Math.floor(s / 60)}:${two(s % 60)}` : `+${s / 60} min`;
+  const pct = x => (Math.max(0, Math.min(axisLen, x)) / axisLen) * 100;
+  const el = (tag, cls, text) => {
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  };
+  // Axeln växer i steg och hoppar bara när turen passerar ett steg.
+  const setAxis = span => {
+    const [len, every] = STEPS.find(([s]) => span <= s * AIR) || STEPS[STEPS.length - 1];
+    axisLen = len * AIR;
+    tickEvery = every;
+  };
+  const callCount = (T, cut) => Object.values(T.pieces).flat().filter(p => p.tool && !p.ask && p.s <= cut).length;
+
+  /* ---------- Tolkning: vad vyn vet vid en viss tidpunkt ---------- */
+  function build(turn, mode, t) {
+    const cut = mode === 'play' ? t : CUT[mode];
+    const rows = [];
+    for (const a of turn.agents) {
+      if (a.start > cut) continue;
+      const closed = a.end <= cut;
+      const state = closed ? 'done'
+        : mode === 'play' ? 'run'
+        : mode === 'ended' ? 'abort'
+        : a.parent ? 'unknown' : 'run';
+      const rowEnd = closed ? a.end : mode === 'ended' ? cut : mode === 'play' ? t : null;
+      const segs = [];
+      let cursor = a.start;
+      let open = null;
+      let lastEv = a.start;
+      let calls = 0;
+      (turn.pieces[a.id] || []).filter(p => p.s <= cut).forEach((p, i) => {
+        if (p.tool && !p.ask) calls++;
+        lastEv = Math.max(lastEv, p.s);
+        if (cursor !== Infinity && p.s > cursor + 0.05) {
+          segs.push({ key: `${a.id}:g${cursor}`, k: 'think', s: cursor, e: p.s, gap: true });
+        }
+        let e = p.e, fade = !!p.unknownEnd && p.e <= cut, isOpen = false, stale = false;
+        if (p.e > cut) {
+          if (mode === 'play') { e = t; isOpen = true; }
+          else if (mode === 'ended') { e = cut; fade = p.k !== 'wait'; }
+          else if (p.k === 'wait') { e = axisLen; isOpen = true; }
+          else { e = p.s + STALE_LEN; fade = true; stale = true; isOpen = true; }
+        } else {
+          lastEv = Math.max(lastEv, p.e);
+        }
+        const seg = { key: `${a.id}:${i}`, k: p.k, s: p.s, e, fade, stale, open: isOpen, fail: !!p.fail && p.e <= cut, p };
+        if (!p.hidden) segs.push(seg);
+        if (isOpen) open = seg;
+        cursor = isOpen ? Infinity : Math.max(cursor, e);
+      });
+      let gapOpen = null;
+      if (rowEnd != null && cursor !== Infinity && rowEnd > cursor + 0.05) {
+        const g = { key: `${a.id}:g${cursor}`, k: 'think', s: cursor, e: rowEnd, gap: true, open: state === 'run' };
+        segs.push(g);
+        if (g.open) gapOpen = g;
+      }
+      if (closed) lastEv = a.end;
+      rows.push({ a, state, segs, open: open || gapOpen, calls, lastEv, rowEnd });
+    }
+    const lastEvent = mode === 'play' ? turn.events.filter(x => x <= t).pop() ?? 0 : cut;
+    const running = rows.filter(r => r.a.parent && r.state === 'run').length;
+    const unknown = rows.filter(r => r.state === 'unknown').length;
+    return { mode, t, cut, rows, lastEvent, running, unknown };
+  }
+
+  /* ---------- Vyn ---------- */
+  const $ = id => document.getElementById(id);
+  const vsc = $('vsc'), sw = $('sw');
+  const rowsEl = $('sw-rows'), turnsEl = $('sw-turns'), axisEl = $('sw-axis'), underEl = $('sw-under');
+  const linksEl = $('sw-links'), nowEl = $('sw-now'), detailEl = $('sw-detail'), statusEl = $('sw-status');
+  const tipEl = $('sw-tip'), legendEl = $('sw-legend'), sbSw = $('sb-sw');
+  const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  const ui = { mode: 'play', status: 'ok', place: 'full', theme: 'dark', reduce: motion.matches,
+               sel: 'main', hover: null, playing: true, t: 17, copied: false };
+  const rowMap = new Map();
+  const segInfo = new Map();
+  const SVG = 'http://www.w3.org/2000/svg';
+  const svgEl = (name, attrs) => {
+    const n = document.createElementNS(SVG, name);
+    for (const k in attrs) n.setAttribute(k, attrs[k]);
+    return n;
+  };
+  const warnIcon = () => {
+    const s = svgEl('svg', { viewBox: '0 0 16 16', class: 'ic-warn', 'aria-hidden': 'true' });
+    s.append(svgEl('path', { d: 'M8 1.8 15 14.2H1Z', fill: 'none', stroke: 'currentColor', 'stroke-width': '1.3', 'stroke-linejoin': 'round' }),
+             svgEl('path', { d: 'M8 6v4M8 11.6v1', stroke: 'currentColor', 'stroke-width': '1.4' }));
+    return s;
+  };
+  const oneOrMany = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+
+  function makeRow(a, animate) {
+    const row = el('div', 'sw-row');
+    row.setAttribute('role', 'option');
+    row.dataset.id = a.id;
+    row.tabIndex = -1;
+    const lc = el('div', 'sw-lc');
+    lc.style.setProperty('--d', a.depth);
+    lc.append(a.depth ? el('span', 'sw-elbow') : el('span', 'sw-tw', '▾'));
+    const names = el('span', 'sw-names');
+    const ty = el('span', 'sw-ty', a.type);
+    const ds = el('span', 'sw-ds', a.desc);
+    names.append(ty, ds);
+    lc.append(names);
+    const tr = el('div', 'sw-tr');
+    const track = el('div', 'sw-track');
+    tr.append(track);
+    row.append(lc, tr);
+    const R = { el: row, ds, dsText: a.desc, track, segs: new Map(), cap: null, label: null };
+    const list = view.agents;
+    const idx = list.indexOf(a);
+    let before = null;
+    for (let i = idx + 1; i < list.length && !before; i++) before = rowMap.get(list[i].id)?.el || null;
+    rowsEl.insertBefore(row, before);
+    if (animate) flashOnce(row, 'enter');
+    rowMap.set(a.id, R);
+    return R;
+  }
+
+  function flashOnce(node, cls) {
+    node.classList.add(cls);
+    node.addEventListener('animationend', () => node.classList.remove(cls), { once: true });
+  }
+
+  function waitLabel(p) {
+    const c = byId[p.agent];
+    return p.afterStop ? `Väntar på ${c.type} i bakgrunden` : `Väntar på ${c.type}`;
+  }
+
+  function place(node, cache, x0, x1) {
+    const L = `${pct(x0).toFixed(3)}%`;
+    const W = `max(2px, calc(${(pct(x1) - pct(x0)).toFixed(3)}% - 1px))`;
+    if (node._l !== L) { node.style.left = L; node._l = L; }
+    if (cache && node._w !== W) { node.style.width = W; node._w = W; }
+  }
+
+  function renderRows(m, animate) {
+    segInfo.clear();
+    const seen = new Set();
+    for (const r of m.rows) {
+      const a = r.a;
+      seen.add(a.id);
+      const R = rowMap.get(a.id) || makeRow(a, animate);
+      const dsText = a.id === 'main' && r.state === 'abort' ? `Avslutad ${clock(m.cut)}` : a.desc;
+      if (R.dsText !== dsText) { R.ds.textContent = dsText; R.dsText = dsText; }
+      const selected = ui.sel === a.id;
+      R.el.setAttribute('aria-selected', String(selected));
+      R.el.tabIndex = selected ? 0 : -1;
+
+      const keep = new Set();
+      for (const s of r.segs) {
+        keep.add(s.key);
+        segInfo.set(s.key, { s, row: r });
+        let n = R.segs.get(s.key);
+        if (!n) {
+          n = el('div', `seg k-${s.k}`);
+          n.dataset.key = s.key;
+          if (s.k === 'wait') n.append(el('span', 'seg-lb', waitLabel(s.p)));
+          R.track.append(n);
+          R.segs.set(s.key, n);
+          if (animate && !s.gap) flashOnce(n, 'enter');
+        }
+        n.classList.toggle('fade', s.fade);
+        n.classList.toggle('fail', s.fail);
+        n.classList.toggle('hov', ui.hover === s.key);
+        place(n, true, s.s, s.e);
+      }
+      for (const [key, n] of R.segs) if (!keep.has(key)) { n.remove(); R.segs.delete(key); }
+
+      let capKind = null, capAt = 0, label = null;
+      if (r.state === 'done') { capKind = 'done'; capAt = a.end; }
+      else if (r.state === 'abort') { capKind = 'abort'; capAt = m.cut; label = a.id === 'main' ? 'sessionen slutade' : 'avbruten'; }
+      else if (r.state === 'unknown') { capKind = 'unknown'; capAt = r.open ? r.open.e : r.lastEv + STALE_LEN; label = ui.place === 'split' ? 'okänt läge' : `okänt läge · ingen signal sedan ${clock(r.lastEv)}`; }
+      if (capKind) {
+        if (!R.cap) { R.cap = el('div'); R.track.append(R.cap); if (animate) flashOnce(R.cap, 'enter'); }
+        const cls = `cap ${capKind}`;
+        if (R.cap.className.replace(' enter', '') !== cls) { R.cap.className = cls; R.cap.textContent = capKind === 'abort' ? '✕' : ''; }
+        place(R.cap, false, capAt, capAt);
+      } else if (R.cap) { R.cap.remove(); R.cap = null; }
+      if (label) {
+        if (!R.label) { R.label = el('div', 'tlabel'); R.track.append(R.label); }
+        if (R.label.textContent !== label) R.label.textContent = label;
+        place(R.label, false, capAt, capAt);
+      } else if (R.label) { R.label.remove(); R.label = null; }
+    }
+    for (const [id, R] of rowMap) if (!seen.has(id)) { R.el.remove(); rowMap.delete(id); }
+  }
+
+  let linkSig = '';
+  function renderLinks(m) {
+    const selRow = m.rows.find(r => r.a.id === ui.sel);
+    const pairs = [];
+    if (selRow) {
+      if (selRow.a.parent) pairs.push([selRow.a.parent, selRow]);
+      for (const r of m.rows) if (r.a.parent === ui.sel) pairs.push([ui.sel, r]);
+    }
+    const box = linksEl.getBoundingClientRect();
+    const yOf = id => {
+      const R = rowMap.get(id);
+      if (!R) return null;
+      const b = R.track.getBoundingClientRect();
+      return b.top - box.top + b.height / 2;
+    };
+    const half = ui.place === 'split' ? 6 : 7;
+    const shapes = [];
+    for (const [pid, child] of pairs) {
+      const yp = yOf(pid), yc = yOf(child.a.id);
+      if (yp == null || yc == null) continue;
+      const dir = yc > yp ? 1 : -1;
+      const y0 = yp + dir * half, y1 = yc - dir * half;
+      const xs = box.width * pct(child.a.start) / 100;
+      shapes.push(['M', xs, y0, 'V', y1], ['M', xs - 2.5, y0, 'H', xs + 2.5], ['M', xs - 2.5, y1, 'H', xs + 2.5]);
+      if (child.state === 'done' || child.state === 'abort') {
+        const xe = box.width * pct(child.state === 'done' ? child.a.end : m.cut) / 100;
+        shapes.push(['M', xe, y1, 'Q', xe + 12, (y0 + y1) / 2, xe, y0], ['M', xe - 2.5, y0, 'H', xe + 2.5], ['M', xe - 2.5, y1, 'H', xe + 2.5]);
+      }
+    }
+    const ds = shapes.map(s => s.map(v => typeof v === 'number' ? v.toFixed(1) : v).join(' '));
+    const sig = ds.join('|');
+    if (sig === linkSig) return;
+    linkSig = sig;
+    linksEl.replaceChildren(...ds.map(d => svgEl('path', { d, class: 'lk' })));
+  }
+
+  let axisSig = '';
+  function renderAxis(m) {
+    const end = view !== LATEST ? ''
+      : m.mode === 'unknown' ? `nu ${clockAt(LATEST.base, STALE_NOW)}`
+      : m.mode === 'ended' ? `avslutad ${clock(m.cut)}` : '';
+    const narrow = ui.place === 'split';
+    const sig = [view.id, axisLen, end, narrow].join('|');
+    if (sig === axisSig) return;
+    axisSig = sig;
+    linkSig = '';
+    const ticks = [];
+    for (let s = 0; s < axisLen; s += tickEvery) ticks.push(s);
+    const limit = end ? (narrow ? 60 : 85) : 100;
+    const labels = ticks
+      .filter((s, i) => pct(s) <= limit && !(narrow && ticks.length > 4 && i % 2))
+      .map(s => {
+        const n = el('span', s === 0 ? 'ax-first' : '', s === 0 ? clock(0) : offset(s));
+        n.style.left = `${pct(s)}%`;
+        return n;
+      });
+    if (end) labels.push(el('span', 'ax-end', end));
+    axisEl.replaceChildren(...labels);
+    underEl.replaceChildren(...ticks.map(s => { const g = el('div', 'gl'); g.style.left = `${pct(s)}%`; return g; }));
+  }
+
+  function renderNow(m) {
+    const show = view === LATEST && (m.mode === 'unknown' || (m.mode === 'play' && m.t < LATEST.end));
+    if (nowEl.hidden === show) nowEl.hidden = !show;
+    const left = m.mode === 'play' ? `${pct(m.t)}%` : '100%';
+    if (nowEl._l !== left) { nowEl.style.left = left; nowEl._l = left; }
+  }
+
+  /* ---------- Äldre turer (Q27): en rad var, en tur utfälld i taget ---------- */
+  function turnLabel(T, latest) {
+    if (T !== LATEST) return `${clockAt(T.base, 0).slice(0, 5)} · ${oneOrMany(T.agents.length - 1, 'agent', 'agenter')} · ${dur(T.end)}`;
+    const tail = ui.mode === 'unknown' ? 'okänt läge'
+      : ui.mode === 'ended' ? 'avbruten'
+      : latest.t >= T.end ? dur(T.end) : 'pågår';
+    return `${clockAt(T.base, 0).slice(0, 5)} · ${oneOrMany(latest.rows.length - 1, 'agent', 'agenter')} · ${tail}`;
+  }
+
+  let turnsSig = '';
+  function renderTurns(latest) {
+    const items = TURN_DATA.filter(T => T !== view).map(T => [T.id, turnLabel(T, latest)]);
+    const sig = JSON.stringify(items);
+    if (sig !== turnsSig) {
+      turnsSig = sig;
+      const focused = turnsEl.contains(document.activeElement) ? document.activeElement.dataset.id : null;
+      turnsEl.replaceChildren(...items.map(([id, label]) => {
+        const n = el('div', 'sw-turn');
+        n.setAttribute('role', 'option');
+        n.dataset.id = id;
+        n.append(el('span', 'sw-tw', '▸'), label);
+        return n;
+      }));
+      if (focused) turnsEl.querySelector(`[data-id="${focused}"]`)?.focus({ preventScroll: true });
+    }
+    for (const n of turnsEl.children) {
+      const selected = ui.sel === n.dataset.id;
+      if (n.getAttribute('aria-selected') !== String(selected)) n.setAttribute('aria-selected', String(selected));
+      n.tabIndex = selected ? 0 : -1;
+    }
+  }
+
+  function openTurn(id) {
+    const T = TURN_DATA.find(x => x.id === id);
+    if (!T || T === view) return;
+    view = T;
+    ui.sel = T.agents[0].id;
+    ui.hover = null;
+    resetRows();
+    render(true);
+    rowMap.get(ui.sel)?.el.focus({ preventScroll: true });
+  }
+
+  /* ---------- Detaljpanelen (Q29) ---------- */
+  function detailOf(p, out) {
+    if (p.tool === 'Grep') out.push({ nosave: 'mönstret sparas inte' });
+    else if (p.tool === 'Bash') out.push(p.d);
+    else if (p.d) out.push({ code: p.d });
+    else out.push({ dim: 'ingen detalj sparas' });
+  }
+
+  function waitParts(p) {
+    const c = byId[p.agent];
+    return [p.afterStop ? `Turen är klar · väntar på ${c.type} i bakgrunden` : `Väntar på ${c.type}`, { dim: ` · ${c.desc}` }];
+  }
+
+  function detailLines(m, latest) {
+    const turn = TURN_DATA.find(T => T.id === ui.sel);
+    const hs = ui.hover && segInfo.get(ui.hover);
+    if (turn && !hs) {
+      return [
+        [{ b: `Tur ${clockAt(turn.base, 0)}` }, { dim: ' · ihopfälld' }],
+        [turnLabel(turn, latest).split(' · ').slice(1).join(' · ')],
+        [`${callCount(turn, turn === LATEST ? latest.cut : Infinity)} anrop · klicka eller tryck Enter för att fälla ut turen`],
+      ];
+    }
+    const r = hs ? hs.row : m.rows.find(x => x.a.id === ui.sel) || m.rows[0];
+    const a = r.a;
+    const l1 = [{ b: a.type }, ` · ${r.a.id === 'main' && r.state === 'abort' ? `${a.desc} · Avslutad ${clock(m.cut)}` : a.desc}`];
+    if (a.bg) l1.push({ dim: ' · i bakgrunden' });
+
+    if (hs) {
+      const s = hs.s, p = s.p;
+      const l2 = [{ chip: s.k }];
+      if (s.gap) l2.push('Tänka', { dim: ' · tiden mellan två anrop' });
+      else if (s.k === 'wait') l2.push(...waitParts(p));
+      else if (s.k === 'you') l2.push(`Väntar på dig · ${p.tool}`);
+      else { l2.push(`${p.tool} · `); detailOf(p, l2); }
+      const running = s.open && !s.stale;
+      const end = running && m.mode === 'unknown' ? STALE_NOW : s.e;
+      const bits = [];
+      if (!s.stale) bits.push(dur(end - s.s));
+      bits.push(running ? `${clock(s.s)}–` : s.stale ? `började ${clock(s.s)}` : `${clock(s.s)}–${clock(s.e)}`);
+      if (running) bits.push('pågår');
+      if (s.fail) bits.push('misslyckades');
+      if (s.fade && !s.stale) bits.push('okänt slut');
+      if (s.stale) bits.push('ingen signal sedan dess');
+      return [l1, l2, [bits.join(' · ')]];
+    }
+
+    let l2;
+    if (r.state === 'done') l2 = [a.id === 'main' ? `Turen klar ${clock(a.end)}` : `Klar ${clock(a.end)}`];
+    else if (r.state === 'abort') l2 = a.id === 'main'
+      ? [`Avslutad ${clock(m.cut)}`, { dim: ' · sessionen slutade mitt i turen' }]
+      : [`Avbruten ${clock(m.cut)}`, { dim: ' · sessionen slutade innan agenten stoppade' }];
+    else if (r.state === 'unknown') l2 = ['Okänt läge', { dim: ` · ingen signal sedan ${clock(r.lastEv)}` }];
+    else {
+      const o = r.open;
+      if (!o || o.gap) l2 = [{ chip: 'think' }, 'Tänka', { dim: ` · inget anrop sedan ${clock(o ? o.s : m.t)}` }];
+      else if (o.k === 'wait') l2 = [{ chip: 'wait' }, ...waitParts(o.p)];
+      else if (o.k === 'you') l2 = [{ chip: 'you' }, `Väntar på dig · ${o.p.tool}`];
+      else { l2 = [{ chip: o.k }, `Kör ${o.p.tool} · `]; detailOf(o.p, l2); }
+    }
+    const endT = r.state === 'done' ? a.end : m.mode === 'play' ? m.t : m.mode === 'unknown' ? STALE_NOW : m.cut;
+    const kids = m.rows.filter(x => x.a.parent === a.id).length;
+    const l3 = [`${dur(endT - a.start)} · ${r.calls} anrop${kids ? ` · ${oneOrMany(kids, 'agent', 'agenter')} startade` : ''}`];
+    return [l1, l2, l3];
+  }
+
+  const renderParts = (node, parts) => {
+    for (const p of parts) {
+      if (typeof p === 'string') node.append(p);
+      else if (p.b) node.append(el('b', null, p.b));
+      else if (p.code) node.append(el('code', null, p.code));
+      else if (p.dim) node.append(el('span', 'dim', p.dim));
+      else if (p.nosave) node.append(el('span', 'nosave', p.nosave));
+      else if (p.strong) node.append(el('span', 'st-strong', p.strong));
+      else if (p.chip) node.append(el('span', `chip k-${p.chip}`));
+      else if (p.icon === 'ok') node.append(el('span', 'dot-ok'));
+      else if (p.icon === 'warn') node.append(warnIcon());
+      else if (p.copy) {
+        const btn = el('button', 'btn2', ui.copied ? 'Kopierat' : 'Kopiera');
+        btn.type = 'button';
+        btn.dataset.copy = p.copy;
+        node.append(btn);
+      }
+    }
+  };
+
+  let detailSig = '';
+  function renderDetail(m, latest) {
+    const lines = detailLines(m, latest);
+    const sig = JSON.stringify(lines);
+    if (sig === detailSig) return;
+    detailSig = sig;
+    sw.dataset.hover = String(!!(ui.hover && segInfo.has(ui.hover)));
+    detailEl.replaceChildren(...lines.map((parts, i) => {
+      const d = el('div', `dt-${i + 1}`);
+      renderParts(d, parts);
+      return d;
+    }));
+  }
+
+  /* ---------- Statusrad (Q18, Q36) och statusfält (Q11) ---------- */
+  const CONNECT = 'npm run connect';
+  function statusParts(m) {
+    const last = clockAt(LATEST.base, m.lastEvent);
+    switch (ui.status) {
+      case 'changed': return [{ icon: 'warn' }, { strong: 'Insamlaren har ändrats' }, ' · collector.cjs har kontrollsumman ', { code: '4c1e…9b02' }, ', väntad ', { code: 'a7d3…61f8' }, ' · ', { code: CONNECT }, { copy: CONNECT }];
+      case 'silent': return [{ icon: 'warn' }, { strong: 'Inga nya händelser' }, ' · Node-sökvägen i pluginet finns inte längre: ', { code: '~/.nvm/versions/node/v24.14.1/bin/node' }, ' · ', { code: CONNECT }, { copy: CONNECT }];
+      case 'dropped': return [{ icon: 'ok' }, `Pluginet aktivt · senaste händelse ${last} · `, { strong: '3 händelser kastades' }, ' eftersom formatet var okänt'];
+      default: return [{ icon: 'ok' }, `Pluginet aktivt · senaste händelse ${last}`];
+    }
+  }
+
+  let statusSig = '';
+  function renderStatus(m) {
+    const parts = statusParts(m);
+    const sig = JSON.stringify(parts) + ui.copied;
+    if (sig !== statusSig) {
+      statusSig = sig;
+      statusEl.replaceChildren();
+      renderParts(statusEl, parts);
+    }
+    const hide = m.running === 0 && m.unknown === 0;
+    if (sbSw.hidden !== hide) sbSw.hidden = hide;
+    const txt = `⚙︎ ${[m.running || '', m.unknown ? '?' : ''].filter(Boolean).join(' ')}`;
+    if (sbSw.textContent !== txt) {
+      sbSw.textContent = txt;
+      const bits = [];
+      if (m.running) bits.push(oneOrMany(m.running, 'agent kör', 'agenter kör'));
+      if (m.unknown) bits.push(`${oneOrMany(m.unknown, 'agent', 'agenter')} i okänt läge`);
+      sbSw.title = `${bits.join(', ')} i subagent-watch. Klicka för att öppna vyn.`;
+    }
+  }
+
+  /* ---------- Verktygstips ---------- */
+  function showTip(target, parts) {
+    tipEl.replaceChildren();
+    renderParts(tipEl, parts);
+    tipEl.hidden = false;
+    const sb = sw.getBoundingClientRect(), tb = target.getBoundingClientRect();
+    const x = Math.max(4, Math.min(tb.left - sb.left, sb.width - tipEl.offsetWidth - 4));
+    let y = tb.bottom - sb.top + 4;
+    if (y + tipEl.offsetHeight > sb.height - 4) y = tb.top - sb.top - tipEl.offsetHeight - 4;
+    tipEl.style.left = `${x}px`;
+    tipEl.style.top = `${y}px`;
+  }
+  const hideTip = () => { tipEl.hidden = true; };
+
+  /* ---------- Förklaring (Q26) ---------- */
+  const MARKS = [
+    { cls: 'mk-done', label: 'klar', tip: 'SubagentStop eller Stop har kommit.' },
+    { cls: 'mk-fail', label: 'misslyckades', tip: 'PostToolUseFailure. Felmeddelandet sparas inte.' },
+    { cls: 'k-read mk-fade', label: 'okänt slut', tip: 'Anropet fick inget eget slut och stängdes av nästa händelse från samma agent.' },
+  ];
+  for (const k of ['read', 'term', 'write', 'think', 'wait', 'you', 'other']) {
+    const n = el('span', k === 'think' ? 'lg lg-tip' : 'lg');
+    n.tabIndex = 0;
+    n.dataset.title = CATS[k].label;
+    n.dataset.tip = CATS[k].tip;
+    n.append(el('i', `k-${k}`), CATS[k].label);
+    legendEl.append(n);
+  }
+  legendEl.append(el('span', 'lg-sep'));
+  for (const mk of MARKS) {
+    const n = el('span', 'lg');
+    n.tabIndex = 0;
+    n.dataset.title = mk.label[0].toUpperCase() + mk.label.slice(1);
+    n.dataset.tip = mk.tip;
+    n.append(el('i', mk.cls), mk.label);
+    legendEl.append(n);
+  }
+  const legendTip = e => {
+    const n = e.target.closest('.lg');
+    if (n) showTip(n, [{ b: `${n.dataset.title}. ` }, n.dataset.tip]);
+  };
+  legendEl.addEventListener('mouseover', legendTip);
+  legendEl.addEventListener('focusin', legendTip);
+  legendEl.addEventListener('mouseleave', hideTip);
+  legendEl.addEventListener('focusout', hideTip);
+
+  /* ---------- Markering, hovring och tangentbord ---------- */
+  rowsEl.addEventListener('mouseover', e => {
+    const seg = e.target.closest('.seg');
+    ui.hover = seg ? seg.dataset.key : null;
+    const lc = e.target.closest('.sw-lc');
+    if (lc) {
+      const a = byId[lc.parentElement.dataset.id];
+      showTip(lc, [{ b: a.type }, ` · ${a.desc}`, a.bg ? { dim: ' · i bakgrunden' } : '']);
+    } else hideTip();
+  });
+  rowsEl.addEventListener('mouseleave', () => { ui.hover = null; hideTip(); });
+
+  const pick = node => {
+    if (!node) return;
+    ui.sel = node.dataset.id;
+    node.focus({ preventScroll: true });
+  };
+  rowsEl.addEventListener('click', e => pick(e.target.closest('.sw-row')));
+  turnsEl.addEventListener('click', e => {
+    const n = e.target.closest('.sw-turn');
+    if (n) openTurn(n.dataset.id);
+  });
+  turnsEl.addEventListener('keydown', e => {
+    if (!['Enter', ' ', 'ArrowRight'].includes(e.key) || !TURN_DATA.some(T => T.id === ui.sel)) return;
+    e.preventDefault();
+    openTurn(ui.sel);
+  });
+  const onKey = e => {
+    if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(e.key)) return;
+    e.preventDefault();
+    const items = [...rowsEl.children, ...turnsEl.children];
+    let i = Math.max(0, items.findIndex(n => n.dataset.id === ui.sel));
+    if (e.key === 'Home') i = 0;
+    else if (e.key === 'End') i = items.length - 1;
+    else i = Math.max(0, Math.min(items.length - 1, i + (e.key === 'ArrowDown' ? 1 : -1)));
+    pick(items[i]);
+  };
+  rowsEl.addEventListener('keydown', onKey);
+  turnsEl.addEventListener('keydown', onKey);
+
+  let copyTimer = 0;
+  statusEl.addEventListener('click', async e => {
+    const btn = e.target.closest('[data-copy]');
+    if (!btn) return;
+    try { await navigator.clipboard.writeText(btn.dataset.copy); } catch { /* skissen: urklipp kan vara blockerat */ }
+    ui.copied = true;
+    clearTimeout(copyTimer);
+    copyTimer = setTimeout(() => { ui.copied = false; }, 1600);
+  });
+
+  /* ---------- Panelen och statusfältet ---------- */
+  const setTab = tab => {
+    vsc.dataset.tab = tab;
+    $('tab-term').classList.toggle('on', tab === 'term' || ui.place === 'split');
+    $('tab-sw').classList.toggle('on', tab === 'sw' || ui.place === 'split');
+  };
+  $('tab-term').addEventListener('click', () => setTab('term'));
+  $('tab-sw').addEventListener('click', () => setTab('sw'));
+  sbSw.addEventListener('click', () => {
+    setTab('sw');
+    (rowsEl.querySelector('[tabindex="0"]') || turnsEl.querySelector('[tabindex="0"]'))?.focus({ preventScroll: true });
+  });
+
+  /* ---------- Sidans kontroller ---------- */
+  const MODE_NOTES = {
+    play: ['Turen spelas upp', 'Huvudsessionen startar en Explore-agent i förgrunden och en general-purpose-agent i bakgrunden, som i sin tur startar en egen Explore-agent. Bitarna växer medan anropet pågår, och tiden mellan två anrop blir Tänka. Bash-anropet i general-purpose misslyckas och får en röd markering. Den inre Explore-agenten ber om lov att läsa en fil. Du nekar, ingen händelse kommer, och biten får okänt slut när agenten stoppar.'],
+    unknown: ['Ingen signal på 10 minuter (Q13)', 'Klockan är 14:42:41. Det senaste från general-purpose är att ett Bash-anrop började 14:32:20. Det kan vara ett långt test, eller en agent som har dött utan att stoppa. Vyn gissar inte: biten tonas ut, raden får en streckad ring och texten okänt läge. Agenten tas inte bort, och statusfältet visar ⚙ ?.'],
+    ended: ['Sessionen slutade mitt i turen (Q13, Q15)', 'SessionEnd kom 14:32:22 medan general-purpose körde Bash. Öppna agenter stängs som avbrutna, anropet som pågick får okänt slut och sessionen tonas ned med Avslutad 14:32:22. Den ligger kvar tills en ny session startar i projektet. Posten i statusfältet försvinner, eftersom inga agenter kör.'],
+  };
+  const STATUS_NOTES = {
+    ok: ['Allt i ordning (Q18)', 'Statusraden visar att pluginet är aktivt och när den senaste händelsen kom. Raden ovanför sammanfattar sessioner i andra projekt (Q3).'],
+    changed: ['Insamlaren har ändrats (Q36)', 'Kontrollsumman för skriptet eller hooks.json skiljer sig från den som sparades vid anslutningen. Vyn visar datan som vanligt, säger vilka summor som skiljer och ger ett kommando att kopiera. Kommandot är en fast sträng (S10).'],
+    silent: ['Inga nya händelser (R3)', 'Node-sökvägen som skrevs in vid anslutningen finns inte längre, till exempel efter byte av Node-version med nvm. I verkligheten skulle turen ovan ha stannat. Här visas den kvar så att du kan jämföra.'],
+    dropped: ['Kastade händelser (S4, R7)', 'Rader som inte klarar schemakontrollen eller är för stora kastas och räknas. Vyn säger hur många, men aldrig vad de innehöll.'],
+  };
+  const notes = () => {
+    $('note-mode-title').textContent = MODE_NOTES[ui.mode][0];
+    $('note-mode-text').textContent = MODE_NOTES[ui.mode][1];
+    $('note-status-title').textContent = STATUS_NOTES[ui.status][0];
+    $('note-status-text').textContent = STATUS_NOTES[ui.status][1];
+  };
+
+  const playBtn = $('play'), restartBtn = $('restart'), scrub = $('scrub'), clockOut = $('clock');
+  let dragging = false;
+  const resetRows = () => {
+    for (const R of rowMap.values()) R.el.remove();
+    rowMap.clear();
+    linkSig = '';
+    axisSig = '';
+  };
+  const syncPlay = () => {
+    const live = ui.mode === 'play';
+    playBtn.disabled = restartBtn.disabled = scrub.disabled = !live;
+    playBtn.textContent = ui.playing ? 'Pausa' : ui.t >= PLAY_END ? 'Spela igen' : 'Spela';
+  };
+  const onRadio = (name, fn) => document.querySelectorAll(`input[name="${name}"]`).forEach(r =>
+    r.addEventListener('change', () => { if (r.checked) fn(r.value); }));
+
+  onRadio('mode', v => {
+    ui.mode = v;
+    ui.hover = null;
+    if (view !== LATEST) { view = LATEST; ui.sel = 'main'; }
+    resetRows();
+    syncPlay();
+    notes();
+    render(true);
+  });
+  onRadio('status', v => { ui.status = v; notes(); });
+  onRadio('place', v => {
+    ui.place = v;
+    vsc.dataset.place = v;
+    sw.dataset.narrow = String(v === 'split');
+    setTab(vsc.dataset.tab);
+    linkSig = '';
+  });
+  onRadio('theme', v => { vsc.dataset.vs = v; });
+  const reduceBox = $('reduce');
+  const applyReduce = () => { ui.reduce = reduceBox.checked; vsc.classList.toggle('reduce', ui.reduce); };
+  reduceBox.checked = motion.matches;
+  reduceBox.addEventListener('change', applyReduce);
+  motion.addEventListener?.('change', () => { reduceBox.checked = motion.matches; applyReduce(); });
+  applyReduce();
+
+  playBtn.addEventListener('click', () => {
+    if (!ui.playing && ui.t >= PLAY_END) { ui.t = 0; resetRows(); render(true); }
+    ui.playing = !ui.playing;
+    syncPlay();
+  });
+  restartBtn.addEventListener('click', () => {
+    ui.t = 0;
+    ui.playing = true;
+    resetRows();
+    render(true);
+    syncPlay();
+  });
+  scrub.addEventListener('input', () => {
+    dragging = true;
+    ui.playing = false;
+    ui.t = Number(scrub.value);
+    render(true);
+    syncPlay();
+  });
+  scrub.addEventListener('change', () => { dragging = false; });
+
+  /* ---------- Ritning per bildruta ---------- */
+  let clockSig = '';
+  function render(jumped) {
+    const tv = ui.reduce ? Math.floor(ui.t) : ui.t;
+    const isLatest = view === LATEST;
+    setAxis(!isLatest ? view.end : ui.mode === 'play' ? Math.min(tv, LATEST.end) : CUT[ui.mode]);
+    const m = isLatest ? build(LATEST, ui.mode, tv) : build(view, 'play', view.end + 1);
+    const latest = isLatest ? m : build(LATEST, ui.mode, tv);
+    sw.dataset.ended = String(isLatest && ui.mode === 'ended');
+    renderAxis(m);
+    renderRows(m, !jumped && isLatest && ui.playing && !ui.reduce && ui.mode === 'play');
+    if (!m.rows.some(r => r.a.id === ui.sel) && !TURN_DATA.some(T => T.id === ui.sel)) rowMap.get(m.rows[0].a.id).el.tabIndex = 0;
+    renderTurns(latest);
+    renderNow(m);
+    renderLinks(m);
+    renderDetail(m, latest);
+    renderStatus(latest);
+    if (!dragging) {
+      const v = ui.t.toFixed(1);
+      if (scrub.value !== v) scrub.value = v;
+    }
+    const c = clockAt(LATEST.base, ui.t);
+    if (c !== clockSig) { clockOut.textContent = c; clockSig = c; }
+  }
+
+  let last = performance.now();
+  function frame(now) {
+    const dt = Math.min(0.25, (now - last) / 1000);
+    last = now;
+    if (ui.playing && ui.mode === 'play') {
+      ui.t = Math.min(PLAY_END, ui.t + dt);
+      if (ui.t >= PLAY_END) { ui.playing = false; syncPlay(); }
+    }
+    render(false);
+    requestAnimationFrame(frame);
+  }
+
+  notes();
+  syncPlay();
+  render(true);
+  requestAnimationFrame(frame);
+})();
+</script>

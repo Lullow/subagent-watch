@@ -1,0 +1,9 @@
+node_modules/
+dist/
+out/
+coverage/
+.vscode-test/
+*.vsix
+# Rådata från testerna med hooks checkas aldrig in (S11). Rensade testdata skapas med npm run testdata.
+spike/runs/
+spike/events.jsonl

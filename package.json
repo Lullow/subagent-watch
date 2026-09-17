@@ -1,0 +1,27 @@
+{
+  "name": "subagent-watch",
+  "displayName": "subagent-watch",
+  "description": "Visar Claude Codes subagenter medan de arbetar – bara från dokumenterade, lokala källor.",
+  "version": "0.0.1",
+  "private": true,
+  "publisher": "lullo",
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Lullow/subagent-watch.git"
+  },
+  "scripts": {
+    "build": "node esbuild.mjs",
+    "watch": "node esbuild.mjs --watch",
+    "typecheck": "tsc --noEmit",
+    "test:unit": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --disable-warning=ExperimentalWarning --test 'test/unit/**/*.test.ts'",
+    "test:e2e": "npm run build && node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --disable-warning=ExperimentalWarning --test 'test/e2e/**/*.test.ts'",
+    "test": "npm run test:unit && npm run test:e2e",
+    "testdata": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --disable-warning=ExperimentalWarning scripts/testdata.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.4",
+    "esbuild": "^0.28.2",
+    "typescript": "^7.0.2"
+  }
+}

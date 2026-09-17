@@ -1,0 +1,15 @@
+{"v":1,"time":1789631523081,"event":"PreToolUse","tool":"Agent","tool_use_id":"toolu_01GjYUxkNepzNzFqdgd84dDp","detail":"bg-sleep","background":true}
+{"v":1,"time":1789631523121,"event":"PostToolUse","tool":"Agent","tool_use_id":"toolu_01GjYUxkNepzNzFqdgd84dDp","spawned_agent_id":"a6cffcf4bfb6719d9","duration_ms":5}
+{"v":1,"time":1789631523122,"event":"SubagentStart","agent_id":"a6cffcf4bfb6719d9","agent_type":"general-purpose"}
+{"v":1,"time":1789631523496,"event":"PreToolUse","tool":"Bash","tool_use_id":"toolu_017eHHsS3DSdggsoKbFsSBrA","detail":"Sleep for 8 seconds"}
+{"v":1,"time":1789631526929,"event":"PreToolUse","agent_id":"a6cffcf4bfb6719d9","agent_type":"general-purpose","tool":"Bash","tool_use_id":"toolu_01HaCGdrJcACfFVxFnuU16b9","detail":"Sleep for 40 seconds"}
+{"v":1,"time":1789631526966,"event":"PostToolUse","agent_id":"a6cffcf4bfb6719d9","agent_type":"general-purpose","tool":"Bash","tool_use_id":"toolu_01HaCGdrJcACfFVxFnuU16b9","duration_ms":5}
+{"v":1,"time":1789631529786,"event":"SubagentStop","agent_id":"a6cffcf4bfb6719d9","agent_type":"general-purpose"}
+{"v":1,"time":1789631531606,"event":"PostToolUse","tool":"Bash","tool_use_id":"toolu_017eHHsS3DSdggsoKbFsSBrA","duration_ms":8068}
+{"v":1,"time":1789631534078,"event":"PreToolUse","tool":"ToolSearch","tool_use_id":"toolu_012qGJkBNMkPT84GoXEVParc"}
+{"v":1,"time":1789631534110,"event":"PostToolUse","tool":"ToolSearch","tool_use_id":"toolu_012qGJkBNMkPT84GoXEVParc","duration_ms":2}
+{"v":1,"time":1789631533163,"event":"PreToolUse","tool":"TaskStop","tool_use_id":"toolu_01GaRfs5nwYFodxLKxY3TCfV"}
+{"v":1,"time":1789631533197,"event":"PostToolUse","tool":"TaskStop","tool_use_id":"toolu_01GaRfs5nwYFodxLKxY3TCfV","duration_ms":2}
+{"v":1,"time":1789631533621,"event":"PreToolUse","tool":"Bash","tool_use_id":"toolu_017Uewkn8cVzMXjNjLXzF1p2","detail":"Sleep for 5 seconds"}
+{"v":1,"time":1789631538667,"event":"PostToolUse","tool":"Bash","tool_use_id":"toolu_017Uewkn8cVzMXjNjLXzF1p2","duration_ms":5013}
+{"v":1,"time":1789631540909,"event":"Stop"}

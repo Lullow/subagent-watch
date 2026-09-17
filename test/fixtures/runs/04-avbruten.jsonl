@@ -1,0 +1,4 @@
+{"v":1,"time":1789631762447,"event":"PreToolUse","tool":"Agent","tool_use_id":"toolu_01Gf3cW33pgLgNripofdyp1c","detail":"fg-sleep"}
+{"v":1,"time":1789631762485,"event":"SubagentStart","agent_id":"ab823704285699b7b","agent_type":"general-purpose"}
+{"v":1,"time":1789631764143,"event":"PreToolUse","agent_id":"ab823704285699b7b","agent_type":"general-purpose","tool":"Bash","tool_use_id":"toolu_013HEctbpi5qkvBxYPDUJCdM","detail":"Sleep for 10 seconds in foreground"}
+{"v":1,"time":1789631764550,"event":"SessionEnd","reason":"other"}

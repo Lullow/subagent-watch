@@ -1,0 +1,13 @@
+{"v":1,"time":1789598981728,"event":"PreToolUse","tool":"Agent","tool_use_id":"toolu_01GDdcsgaWGfF5nP6V1W77Gu","detail":"List spike files"}
+{"v":1,"time":1789598981766,"event":"SubagentStart","agent_id":"a25fe07f793f58e18","agent_type":"Explore"}
+{"v":1,"time":1789598982898,"event":"PreToolUse","tool":"Agent","tool_use_id":"toolu_01VZvQWC3QeP9BkNeFxNWCqg","detail":"Read hook settings","background":true}
+{"v":1,"time":1789598982936,"event":"SubagentStart","agent_id":"ac376a3cbf3058b8c","agent_type":"Explore"}
+{"v":1,"time":1789598982936,"event":"PostToolUse","tool":"Agent","tool_use_id":"toolu_01VZvQWC3QeP9BkNeFxNWCqg","spawned_agent_id":"ac376a3cbf3058b8c","duration_ms":2}
+{"v":1,"time":1789598985521,"event":"PreToolUse","agent_id":"ac376a3cbf3058b8c","agent_type":"Explore","tool":"Read","tool_use_id":"toolu_01XZizneBRhCSLeM8qCpQG7n","detail":".claude/settings.local.json"}
+{"v":1,"time":1789598985555,"event":"PostToolUse","agent_id":"ac376a3cbf3058b8c","agent_type":"Explore","tool":"Read","tool_use_id":"toolu_01XZizneBRhCSLeM8qCpQG7n","duration_ms":3}
+{"v":1,"time":1789598986457,"event":"PreToolUse","agent_id":"a25fe07f793f58e18","agent_type":"Explore","tool":"Bash","tool_use_id":"toolu_01UhvGEYDd4n3ZZFiS5ngvWd","detail":"List all files in the spike directory"}
+{"v":1,"time":1789598986549,"event":"PostToolUse","agent_id":"a25fe07f793f58e18","agent_type":"Explore","tool":"Bash","tool_use_id":"toolu_01UhvGEYDd4n3ZZFiS5ngvWd","duration_ms":56}
+{"v":1,"time":1789598987984,"event":"SubagentStop","agent_id":"ac376a3cbf3058b8c","agent_type":"Explore"}
+{"v":1,"time":1789598988331,"event":"SubagentStop","agent_id":"a25fe07f793f58e18","agent_type":"Explore"}
+{"v":1,"time":1789598988363,"event":"PostToolUse","tool":"Agent","tool_use_id":"toolu_01GDdcsgaWGfF5nP6V1W77Gu","spawned_agent_id":"a25fe07f793f58e18","duration_ms":6602}
+{"v":1,"time":1789598991332,"event":"Stop"}

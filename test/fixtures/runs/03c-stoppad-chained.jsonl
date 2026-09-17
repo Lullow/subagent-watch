@@ -1,0 +1,11 @@
+{"v":1,"time":1789631670823,"event":"PreToolUse","tool":"Agent","tool_use_id":"toolu_013wV5fCnHmPdRxCJJHLPvdi","detail":"bg-sleep","background":true}
+{"v":1,"time":1789631670865,"event":"SubagentStart","agent_id":"ab942a8df049b3a8f","agent_type":"general-purpose"}
+{"v":1,"time":1789631670866,"event":"PostToolUse","tool":"Agent","tool_use_id":"toolu_013wV5fCnHmPdRxCJJHLPvdi","spawned_agent_id":"ab942a8df049b3a8f","duration_ms":5}
+{"v":1,"time":1789631672737,"event":"PreToolUse","tool":"Bash","tool_use_id":"toolu_019DipHC2vYCx9DJ2GLPZuEn","detail":"Wait 12 seconds then echo"}
+{"v":1,"time":1789631677416,"event":"SubagentStop","agent_id":"ab942a8df049b3a8f","agent_type":"general-purpose"}
+{"v":1,"time":1789631684895,"event":"PostToolUse","tool":"Bash","tool_use_id":"toolu_019DipHC2vYCx9DJ2GLPZuEn","duration_ms":12123}
+{"v":1,"time":1789631687721,"event":"PreToolUse","tool":"ToolSearch","tool_use_id":"toolu_01Duq8edFXBJn3pbLnySt7bg"}
+{"v":1,"time":1789631687752,"event":"PostToolUse","tool":"ToolSearch","tool_use_id":"toolu_01Duq8edFXBJn3pbLnySt7bg","duration_ms":1}
+{"v":1,"time":1789631691243,"event":"PreToolUse","tool":"Bash","tool_use_id":"toolu_01RSXbKjYuM1nikVNLF29nd6","detail":"Wait 5 seconds then echo"}
+{"v":1,"time":1789631696286,"event":"PostToolUse","tool":"Bash","tool_use_id":"toolu_01RSXbKjYuM1nikVNLF29nd6","duration_ms":5010}
+{"v":1,"time":1789631695451,"event":"Stop"}
