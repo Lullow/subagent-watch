@@ -254,6 +254,14 @@ webbvy i bottenpanelen  ·  post i statusfältet  ·  statusrad med kontrollsumm
      - `hooks.json` skrivs sist, så pluginet har inga hooks förrän allt annat är på plats. `connection.json` skrivs före pluginfilerna, så att en avbruten anslutning kan städas med `--disconnect`.
      - Bortkopplingen tar bort `hooks.json` först. Om en fil har ändrats lämnas den och `connection.json` kvar, så att bortkopplingen kan köras igen när du har tittat på filen.
      - Planen varnar om `disableAllHooks` är på eller om `subagent-watch@skills-dir` är avstängt i `enabledPlugins`. Dokumentationen säger att pluginet kan stängas av där.
+   - **Klart 2026-09-17:** tolkningen i `src/model/`. Den läser filerna stegvis som opålitlig data (S10) och bygger turer, rader, bitar per kategori, föräldrar och lägen. Testerna täcker acceptanskriterierna 1–5 mot de rensade spike-körningarna och påhittade fall, bland annat fyra parallella agenter, en agent i en agent, klockhoppet i WSL och en koppling som rättas av `PostToolUse` (R2). En riktig session från `~/.subagent-watch` tolkades rätt. Beslut under bygget:
+     - **Parallella anrop:** en rad kan ha flera öppna anrop, som huvudsessionen som väntar på fyra agenter. Därför stängs ett anrop utan slut inte av vilken händelse som helst från samma agent (Q32). Ett anrop som frågade om lov stängs med okänt slut när raden gör ett nytt anrop, eftersom frågan då är besvarad. Övriga öppna anrop stängs när agenten eller turen slutar.
+     - **Väntar på dig** delas med `duration_ms`: frågan varar till `PostToolUse` minus anropets längd, och resten är verktyget.
+     - **Efter Stop** väntar huvudsessionen på agenter som kör i bakgrunden. Fortsätter huvudsessionen utan en ny prompt, till exempel när en bakgrundsagent blir klar, hör det till samma tur, och tiden innan blir Tänka.
+     - **Okänt läge:** en agent räknas som tyst bara om varken den eller någon agent den har startat har hörts av på 10 minuter. Huvudsessionen blir okänd när hela sessionen har varit tyst så länge.
+     - **Start av en bakgrundsagent** är en omedelbar bit som vyn inte visar. Händelser utan `UserPromptSubmit` före sig, som i spike-körningarna, får en tur som börjar vid första händelsen.
+     - **Andra projekt** räknas i raden för andra sessioner så länge de har agenter som kör eller har varit aktiva den senaste timmen. En avslutad session räknas inte.
+     - **Läsningen** avvisar filer större än 20 MB plus 64 KB, och märker en fil som har återskapats med samma namn genom att jämföra de första byten.
 
 ## Källor
 - Hooks: https://code.claude.com/docs/en/hooks

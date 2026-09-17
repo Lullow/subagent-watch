@@ -2,7 +2,7 @@
 
 VS Code-extension som visar Claude Codes subagenter medan de arbetar – bara från dokumenterade, lokala källor.
 
-**Status:** bygget har börjat. Alla designbeslut finns i [docs/subagent-watch-sammanfattning.md](docs/subagent-watch-sammanfattning.md), och den godkända skissen i [docs/skiss/subagent-watch-skiss.html](docs/skiss/subagent-watch-skiss.html). Insamlaren och anslutningen är klara. Tolkningen och vyn återstår.
+**Status:** bygget har börjat. Alla designbeslut finns i [docs/subagent-watch-sammanfattning.md](docs/subagent-watch-sammanfattning.md), och den godkända skissen i [docs/skiss/subagent-watch-skiss.html](docs/skiss/subagent-watch-skiss.html). Insamlaren, anslutningen och tolkningen är klara. Vyn återstår.
 
 ## Utveckling
 
@@ -31,6 +31,15 @@ CI på GitHub (`.github/workflows/ci.yml`) kör typkontroll, enhetstester och te
 - **Skriver aldrig** till stdout eller stderr och avslutar alltid med kod 0.
 - **Kastade händelser** räknas i `sessions/problems-ÅÅÅÅ-MM-DD.jsonl` med bara orsak och tid.
 - **Rensning:** vid `SessionStart` tas filer bort vars senaste händelse är äldre än 24 timmar.
+
+## Tolkningen
+
+`src/model/` läser `sessions/` som opålitlig data och bygger det vyn visar:
+
+- `reader.ts` läser bara hela nya rader, avvisar symlänkar, hårda länkar, fel rättigheter och för stora filer, och märker när en fil har ersatts.
+- `schema.ts` godkänner bara rader som exakt följer insamlarens schema.
+- `interpret.ts` bygger turer, rader för huvudsessionen och agenterna, bitar per kategori (Q26), föräldrar, väntan på dig, fel, avbrutna agenter och okänt läge. Ordningen i filen styr, och tidsstämplarna görs monotona.
+- `window.ts` väljer sessionerna för fönstrets projekt (Q3, Q15, Q16) och sammanfattar andra projekt.
 
 ## Ansluta
 

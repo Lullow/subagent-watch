@@ -69,11 +69,11 @@ export type ParseResult =
 
 type Json = Record<string, unknown>;
 
-const SESSION_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
-const AGENT_ID = /^[A-Za-z0-9_-]{1,64}$/;
-const AGENT_TYPE = /^[A-Za-z0-9][A-Za-z0-9_:.-]{0,79}$/;
-const TOOL_NAME = /^[A-Za-z][A-Za-z0-9_:.-]{0,99}$/;
-const TOOL_USE_ID = /^[A-Za-z0-9_-]{1,100}$/;
+export const SESSION_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+export const AGENT_ID = /^[A-Za-z0-9_-]{1,64}$/;
+export const AGENT_TYPE = /^[A-Za-z0-9][A-Za-z0-9_:.-]{0,79}$/;
+export const TOOL_NAME = /^[A-Za-z][A-Za-z0-9_:.-]{0,99}$/;
+export const TOOL_USE_ID = /^[A-Za-z0-9_-]{1,100}$/;
 
 const isObj = (v: unknown): v is Json => typeof v === "object" && v !== null && !Array.isArray(v);
 const str = (v: unknown): string | undefined => (typeof v === "string" ? v : undefined);
