@@ -5,6 +5,7 @@ import {
   CATEGORY,
   clock,
   hourMinute,
+  laneElapsed,
   laneMeta,
   laneState,
   laneTitle,
@@ -23,6 +24,12 @@ const vscode = acquireVsCodeApi();
 const SVG_NS = "http://www.w3.org/2000/svg";
 /** Q30: narrower than this, the left column shows only the agent type. */
 const NARROW_PX = 420;
+/** Narrower still, the view turns tall: the text stands above its own timeline. */
+const COMPACT_PX = 320;
+
+type Form = "wide" | "narrow" | "compact";
+const formFor = (width: number): Form => (width === 0 || width >= NARROW_PX ? "wide" : width >= COMPACT_PX ? "narrow" : "compact");
+const form = (): Form => (root.dataset.form as Form | undefined) ?? "wide";
 
 /* ---------- State ---------- */
 
@@ -99,6 +106,7 @@ function renderParts(node: HTMLElement, parts: readonly Part[]): void {
 /* ---------- Static frame ---------- */
 
 const root = document.getElementById("root") as HTMLElement;
+root.dataset.form = "wide";
 const legend = el("div", "sw-legend");
 const scroll = el("div", "sw-scroll");
 const detail = el("div", "sw-detail");
@@ -158,6 +166,8 @@ interface Rendered {
   axis: Axis | undefined;
   rows: Map<string, { lane: Lane; track: HTMLElement }>;
   open: { piece: Piece; el: HTMLElement }[];
+  /** The elapsed time beside each running lane in the tall form. */
+  metas: { lane: Lane; el: HTMLElement }[];
   now: HTMLElement | undefined;
   links: SVGElement;
 }
@@ -188,7 +198,7 @@ function waitLabel(piece: Piece, turn: Turn): string {
 }
 
 function renderAxis(axisEl: HTMLElement, under: HTMLElement, axis: Axis, turn: Turn): void {
-  const narrow = root.dataset.narrow === "true";
+  const narrow = form() !== "wide";
   const offsets = ticks(axis);
   const end = axis.endLabel === null ? null : `${axis.endLabel.kind === "now" ? "nu" : "avslutad"} ${clock(axis.endLabel.at)}`;
   const limit = end === null ? 100 : narrow ? 60 : 85;
@@ -233,6 +243,9 @@ function renderLane(entry: Rendered, turn: Turn, axis: Axis, lane: Lane, time: n
       : el("span", "sw-ds", lane.kind === "main" && session.ended !== undefined ? `${title.description} · Avslutad ${hourMinute(session.ended.at)}` : title.description);
   names.append(el("span", "sw-ty", title.type), description);
   lc.append(names);
+  const meta = el("span", "sw-meta", laneElapsed(lane, time));
+  lc.append(meta);
+  entry.metas.push({ lane, el: meta });
 
   const cell = el("div", "sw-tr");
   const track = el("div", "sw-track");
@@ -264,7 +277,7 @@ function renderLane(entry: Rendered, turn: Turn, axis: Axis, lane: Lane, time: n
     mark.style.left = `${percent(axis, cap.at)}%`;
     track.append(mark);
     if (cap.label !== null) {
-      const text = cap.label === "okänt läge" && root.dataset.narrow !== "true" ? `okänt läge · ingen signal sedan ${clock(lane.silentSince ?? lane.lastEventAt)}` : cap.label;
+      const text = cap.label === "okänt läge" && form() === "wide" ? `okänt läge · ingen signal sedan ${clock(lane.silentSince ?? lane.lastEventAt)}` : cap.label;
       const label = el("div", "tlabel", text);
       label.style.left = `${percent(axis, cap.at)}%`;
       track.append(label);
@@ -293,7 +306,7 @@ function renderSession(session: SessionModel, time: number, seen: Set<string>, a
   over.append(svg);
   current.append(under, head, rows, over);
 
-  const entry: Rendered = { session, turn, axis: undefined, rows: new Map(), open: [], now: undefined, links: svg };
+  const entry: Rendered = { session, turn, axis: undefined, rows: new Map(), open: [], metas: [], now: undefined, links: svg };
   if (turn === undefined) {
     rows.append(el("div", "sw-empty", `${session.project ?? "Sessionen"} har startat, men ingen prompt har kommit än.`));
   } else {
@@ -329,7 +342,7 @@ function renderSession(session: SessionModel, time: number, seen: Set<string>, a
 function renderAll(): void {
   if (snapshot === null) return;
   const time = now();
-  root.dataset.narrow = String(root.clientWidth > 0 && root.clientWidth < NARROW_PX);
+  root.dataset.form = formFor(root.clientWidth);
   const focused = scroll.contains(document.activeElement) ? (document.activeElement as HTMLElement).dataset.key : undefined;
   const seen = new Set<string>();
   const animate = !firstRender && !reduceMotion();
@@ -342,6 +355,7 @@ function renderAll(): void {
       el("div", "sw-empty", snapshot.status.kind === "not-connected" ? "subagent-watch är inte ansluten till Claude Code än." : "Inga sessioner med Claude Code i det här projektet det senaste dygnet."),
     );
   }
+  blocks.push(el("div", "sw-spacer"));
   scroll.replaceChildren(...blocks);
   known = seen;
   firstRender = false;
@@ -383,7 +397,7 @@ function drawLinks(): void {
         return at.top - box.top + at.height / 2;
       };
       const x = (time: number): number => (box.width * percent(entry.axis!, time)) / 100;
-      const half = root.dataset.narrow === "true" ? 6 : 7;
+      const half = form() === "wide" ? 7 : 6;
       for (const { parent, child } of links(entry.turn, selected.lane.id)) {
         const yp = y(parent);
         const yc = y(child);
@@ -483,6 +497,10 @@ function tick(): void {
     // Decision 4 from the sketch: the axis jumps only when the turn passes a step.
     if (axisFor(entry.turn, time).length !== entry.axis.length) return renderAll();
     for (const open of entry.open) place(open.el, entry.axis, open.piece.start, Math.max(open.piece.start, time));
+    for (const meta of entry.metas) {
+      const text = laneElapsed(meta.lane, time);
+      if (meta.el.textContent !== text) meta.el.textContent = text;
+    }
     if (entry.now !== undefined && entry.turn.state === "running") entry.now.style.left = `${percent(entry.axis, time)}%`;
   }
   renderDetail();
@@ -591,8 +609,7 @@ window.addEventListener("message", (event: MessageEvent<ToWebview>) => {
 });
 
 new ResizeObserver(() => {
-  const narrow = String(root.clientWidth > 0 && root.clientWidth < NARROW_PX);
-  if (snapshot !== null && root.dataset.narrow !== narrow) renderAll();
+  if (snapshot !== null && root.dataset.form !== formFor(root.clientWidth)) renderAll();
   else drawLinks();
 }).observe(root);
 document.addEventListener("visibilitychange", schedule);

@@ -118,6 +118,12 @@ export function laneState(lane: Lane, turn: Turn, find: LaneLookup): Part[] {
   }
 }
 
+/** How long the lane has been going, for the tall form where there is room beside the name. */
+export function laneElapsed(lane: Lane, now: number): string {
+  const end = lane.end ?? (lane.state === "unknown" ? (lane.silentSince ?? now) : now);
+  return duration(end - lane.start);
+}
+
 export function laneMeta(lane: Lane, turn: Turn, now: number): string {
   const end = lane.end ?? (lane.state === "unknown" ? (lane.silentSince ?? now) : now);
   const started = turn.lanes.filter((l) => l.parentId === lane.id).length;

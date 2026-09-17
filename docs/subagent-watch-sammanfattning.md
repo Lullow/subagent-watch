@@ -270,6 +270,10 @@ webbvy i bottenpanelen  ·  post i statusfältet  ·  statusrad med kontrollsumm
      - **Längder under en sekund** visas i millisekunder.
      - **Uppdatering:** vyn läser nya rader varje sekund och kontrollsummorna var femte sekund. Webbvyn får data bara när något har ändrats, och bitarna växer bara medan en tur pågår (Q10).
      - **Radera insamlad data** bekräftas i VS Codes egen dialog och tar bara bort sessions- och problemfiler. Pluginet och insamlaren ligger kvar.
+   - **Rättat 2026-09-17 efter första blicken i VS Code:** vyn fungerar nu också avlång. Q30 sa bara att en smal vy visar agenttypen, men i praktiken är varje plats utom hela bottenpanelen smal och hög.
+     - **Tre former:** bred (tidslinje bredvid namnen), smal under 420 px (bara agenttypen) och stående under 320 px, där typ och beskrivning står ovanför en tidslinje i full bredd. Linjerna mellan förälder och agent fungerar i alla tre.
+     - **I den stående formen** visas också hur länge varje rad har hållit på, bredvid namnet.
+     - **Ingen död yta:** raderna, detaljpanelen, raden för andra sessioner och statusraden ligger tätt uppifrån, och tomrummet hamnar underst i stället för mellan dem.
 
 ## Källor
 - Hooks: https://code.claude.com/docs/en/hooks
