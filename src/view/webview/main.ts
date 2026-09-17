@@ -123,6 +123,7 @@ const MARKS = [
   { cls: "mk-done", label: "klar", tip: "SubagentStop eller Stop har kommit." },
   { cls: "mk-fail", label: "misslyckades", tip: "PostToolUseFailure. Felmeddelandet sparas inte." },
   { cls: "k-read mk-fade", label: "okänt slut", tip: "Anropet fick inget eget slut och stängdes av en senare händelse." },
+  { cls: "k-you mk-denied", label: "nekat", tip: "Frågan om lov fick inget svar i datan: du sa nej, eller hann inte svara innan turen slutade." },
 ];
 for (const kind of ["read", "term", "write", "think", "wait", "you", "other"] as PieceKind[]) {
   const item = el("span", kind === "think" ? "lg lg-tip" : "lg");
@@ -259,15 +260,22 @@ function renderLane(entry: Rendered, turn: Turn, axis: Axis, lane: Lane, time: n
     const pieceKey = `${key}|${piece.start}|${piece.kind}|${piece.tool ?? ""}`;
     seen.add(pieceKey);
     pieceIndex.set(pieceKey, { session, turn, lane, piece });
+    const denied = piece.kind === "you" && piece.unknownEnd === true;
     const seg = el("div", `seg k-${piece.kind}`);
     seg.dataset.piece = pieceKey;
     if (animate && !known.has(pieceKey) && piece.kind !== "think") seg.classList.add("enter");
-    if (view.fade) seg.classList.add("fade");
+    if (view.fade && !denied) seg.classList.add("fade");
+    if (denied) seg.classList.add("denied");
     if (piece.failed) seg.classList.add("fail");
     if (pieceKey === hover) seg.classList.add("hov");
     if (piece.kind === "wait") seg.append(el("span", "seg-lb", waitLabel(piece, turn)));
     place(seg, axis, view.start, view.end);
     track.append(seg);
+    if (denied) {
+      const mark = el("div", "cap denied", "✕");
+      mark.style.left = `${percent(axis, view.end)}%`;
+      track.append(mark);
+    }
     if (view.open && !silent) entry.open.push({ piece, el: seg });
   }
 

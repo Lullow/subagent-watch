@@ -236,6 +236,22 @@ test("ett Agent-anrop som svarar långt före agenten är klar räknas som en st
   assert.deepEqual(lane(turn, "main").pieces.find((p) => p.tool === "Agent")?.kind, "wait");
 });
 
+test("en tur som börjar direkt efter att en bakgrundsagent blev klar märks som dess svar", () => {
+  const records = [
+    at(0, "UserPromptSubmit"),
+    at(1, "PreToolUse", { tool: "Agent", tool_use_id: "toolu_1", detail: "Bakgrund", background: true }),
+    at(1.01, "PostToolUse", { tool: "Agent", tool_use_id: "toolu_1", spawned_agent_id: "bg" }),
+    at(1.02, "SubagentStart", { agent_id: "bg", agent_type: "general-purpose" }),
+    at(2, "Stop"),
+    at(5, "SubagentStop", { agent_id: "bg", agent_type: "general-purpose" }),
+    at(5.1, "UserPromptSubmit"),
+    at(7, "Stop"),
+    at(30, "UserPromptSubmit"),
+    at(31, "Stop"),
+  ];
+  assert.deepEqual(model(records).turns.map((t) => t.trigger), ["prompt", "agent", "prompt"]);
+});
+
 test("klockan som hoppar bakåt ger aldrig negativa längder", () => {
   const records = run("03a-stoppad-bgbash");
   assert.ok(records.some((r, i) => i > 0 && r.time < records[i - 1]!.time), "testdatan ska innehålla ett hopp bakåt");

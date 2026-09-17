@@ -278,6 +278,7 @@ webbvy i bottenpanelen  ·  post i statusfältet  ·  statusrad med kontrollsumm
    - **Prövat i en riktig session 2026-09-17** med en agent i förgrunden, en i bakgrunden som startade en egen agent, ett långsamt Bash-anrop och ett som misslyckades. Två fynd:
      - **En agent som startas av en bakgrundsagent** svarar direkt med `PostToolUse` och `agentId`, men utan `run_in_background` i anropet. Tolkningen räknar därför ett Agent-anrop som slutar långt före sin agent som en start i bakgrunden, inte som väntan.
      - **När en bakgrundsagent blir klar kommer en ny `UserPromptSubmit`**, alltså en ny tur, inte en fortsättning på den gamla. Beslutet i tolkningen om att huvudsessionen kan fortsätta i samma tur gäller fortfarande, men i praktiken blir det oftast en ny tur med bara Tänka och ett svar.
+   - **Rättat efter test 2 samma dag:** en tur som börjar inom 3 sekunder efter att en bakgrundsagent blev klar märks som "svar på bakgrundsagent", i den ihopfällda raden och i detaljpanelen. Ett nekat eller obesvarat lov ritas inte längre som en uttonad bit utan med streckad kant och ett kryss, med egen post i förklaringen, så att det går att skilja från ett anrop som saknar slut.
 
 ## Källor
 - Hooks: https://code.claude.com/docs/en/hooks

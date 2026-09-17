@@ -47,6 +47,8 @@ export interface Lane {
 
 export interface Turn {
   index: number;
+  /** "agent": the turn began right after a background agent finished, not from a prompt you wrote. */
+  trigger: "prompt" | "agent";
   start: number;
   /** When the main session has stopped and every agent started in the turn is done (Q27). */
   end?: number;

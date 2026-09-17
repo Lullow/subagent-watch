@@ -19,7 +19,7 @@ import {
 const at = (h: number, m: number, s: number): number => new Date(2026, 8, 17, h, m, s).getTime();
 const T0 = at(14, 32, 0);
 const lane = (fields: Partial<Lane>): Lane => ({ id: "main", kind: "main", background: false, depth: 0, start: T0, state: "running", pieces: [], calls: 0, lastEventAt: T0, ...fields });
-const turn = (lanes: Lane[], fields: Partial<Turn> = {}): Turn => ({ index: 0, start: T0, state: "running", lanes, ...fields });
+const turn = (lanes: Lane[], fields: Partial<Turn> = {}): Turn => ({ index: 0, trigger: "prompt", start: T0, state: "running", lanes, ...fields });
 const none = () => undefined;
 const session: SessionModel = { id: "9f5e56ac-b6ec-41eb-aac1-86304f7ecc1f", project: "~/projects/subagent-watch", start: T0, lastEventAt: T0, turns: [] };
 
@@ -86,7 +86,10 @@ test("en bit under musen visar anropet, längden och om det misslyckades eller f
     ["1,0 s · 14:32:04–14:32:05 · misslyckades"],
   ]);
   const denied: Piece = { kind: "you", start: at(14, 32, 17), end: at(14, 32, 19), tool: "Read", unknownEnd: true };
-  assert.deepEqual(pieceLines(denied, denied.end!, none, turn([]))[1], ["2,0 s · 14:32:17–14:32:19 · okänt slut"]);
+  assert.deepEqual(pieceLines(denied, denied.end!, none, turn([])), [
+    [{ chip: "you" }, "Väntar på dig · Read", { dim: " · nekat eller obesvarat" }],
+    ["2,0 s · 14:32:17–14:32:19 · inget svar i datan"],
+  ]);
   const open: Piece = { kind: "think", start: at(14, 32, 30) };
   assert.deepEqual(pieceLines(open, at(14, 32, 31), none, turn([])), [[{ chip: "think" }, "Tänka", { dim: " · tiden mellan två anrop" }], ["1,0 s · 14:32:30– · pågår"]]);
 });
@@ -95,6 +98,7 @@ test("ihopfällda turer och raden för andra sessioner", () => {
   const agents = [lane({}), lane({ id: "a", kind: "agent" }), lane({ id: "b", kind: "agent" })];
   assert.equal(turnSummary(turn(agents, { state: "done", end: T0 + 124_000 }), 0), "14:32 · 2 agenter · 2 min 4 s");
   assert.equal(turnSummary(turn(agents.slice(0, 2)), 0), "14:32 · 1 agent · pågår");
+  assert.equal(turnSummary(turn([lane({})], { trigger: "agent", state: "done", end: T0 + 4_000 }), 0), "14:32 · svar på bakgrundsagent · 4,0 s");
   assert.equal(othersText([]), "Andra sessioner · inga aktiva");
   assert.equal(
     othersText([

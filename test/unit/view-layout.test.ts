@@ -5,7 +5,7 @@ import { AIR, axisFor, FADE_SHARE, laneCap, links, percent, pieceView, ticks } f
 
 const S = 1000;
 const lane = (fields: Partial<Lane>): Lane => ({ id: "main", kind: "main", background: false, depth: 0, start: 0, state: "running", pieces: [], calls: 0, lastEventAt: 0, ...fields });
-const turn = (fields: Partial<Turn>): Turn => ({ index: 0, start: 0, state: "running", lanes: [lane({})], ...fields });
+const turn = (fields: Partial<Turn>): Turn => ({ index: 0, trigger: "prompt", start: 0, state: "running", lanes: [lane({})], ...fields });
 
 test("tidsaxeln växer i steg med luft och hoppar bara när turen passerar ett steg", () => {
   const lengths = [10, 30, 32, 33, 64, 65, 125, 130, 3600, 4 * 3600, 9 * 3600].map((s) => axisFor(turn({}), s * S).length / S / AIR);

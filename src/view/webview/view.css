@@ -200,6 +200,20 @@ body.vscode-high-contrast-light .sw-row:hover .sw-lc {
   -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 18px), transparent);
   mask-image: linear-gradient(to right, #000 calc(100% - 18px), transparent);
 }
+/* A permission question with no answer in the data: you said no, or the turn ended first. */
+.seg.denied { border-right: 2px dashed var(--c-yellow); }
+.cap.denied {
+  width: auto;
+  height: auto;
+  margin: 0;
+  background: none;
+  box-shadow: none;
+  transform: translate(-50%, -50%);
+  font-size: 9px;
+  line-height: 1;
+  color: var(--c-yellow);
+}
+.lg i.mk-denied { border-right: 2px dashed var(--c-yellow); }
 .seg.hov { outline: 1px solid var(--fg); outline-offset: 1px; }
 .seg.enter { animation: segIn 0.25s ease-out; }
 @keyframes segIn { from { filter: brightness(1.7); } to { filter: none; } }

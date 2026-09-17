@@ -102,11 +102,13 @@ export function activity(lane: Lane, turn: Turn, find: LaneLookup): Part[] {
 
 export function laneState(lane: Lane, turn: Turn, find: LaneLookup): Part[] {
   switch (lane.state) {
-    case "done":
+    case "done": {
       if (lane.kind === "agent") return [`Klar ${clock(lane.end ?? lane.lastEventAt)}`];
+      const answer: Part[] = turn.trigger === "agent" ? [{ dim: " · svar på en bakgrundsagent" }] : [];
       return turn.errorType === undefined
-        ? [`Turen klar ${clock(turn.end ?? lane.lastEventAt)}`]
-        : [`Turen slutade med ett API-fel ${clock(turn.end ?? lane.lastEventAt)}`, { dim: ` · ${turn.errorType}` }];
+        ? [`Turen klar ${clock(turn.end ?? lane.lastEventAt)}`, ...answer]
+        : [`Turen slutade med ett API-fel ${clock(turn.end ?? lane.lastEventAt)}`, { dim: ` · ${turn.errorType}` }, ...answer];
+    }
     case "aborted":
       return lane.kind === "agent"
         ? [`Avbruten ${clock(lane.end ?? lane.lastEventAt)}`, { dim: " · sessionen slutade innan agenten stoppade" }]
@@ -134,21 +136,25 @@ export function pieceLines(piece: Piece, visibleEnd: number, find: LaneLookup, t
   const label: Part[] = [{ chip: piece.kind }];
   if (piece.kind === "think") label.push("Tänka", { dim: " · tiden mellan två anrop" });
   else if (piece.kind === "wait") label.push(...waitParts(piece, turn, find));
-  else if (piece.kind === "you") label.push(`Väntar på dig · ${piece.tool ?? "ett verktyg"}`);
+  else if (piece.kind === "you") {
+    label.push(`Väntar på dig · ${piece.tool ?? "ett verktyg"}`);
+    if (piece.unknownEnd) label.push({ dim: " · nekat eller obesvarat" });
+  }
   else label.push(`${piece.tool ?? "Verktyg"} · `, ...callDetail(piece));
   const open = piece.end === undefined;
   const bits = [duration(visibleEnd - piece.start), open ? `${clock(piece.start)}–` : `${clock(piece.start)}–${clock(piece.end!)}`];
   if (open) bits.push("pågår");
   if (piece.failed) bits.push("misslyckades");
-  if (piece.unknownEnd) bits.push("okänt slut");
+  if (piece.unknownEnd) bits.push(piece.kind === "you" ? "inget svar i datan" : "okänt slut");
   return [label, [bits.join(" · ")]];
 }
 
 export function turnSummary(turn: Turn, now: number): string {
   const agents = turn.lanes.filter((l) => l.kind === "agent").length;
+  const middle = turn.trigger === "agent" && agents === 0 ? "svar på bakgrundsagent" : countOf(agents, "agent", "agenter");
   const tail =
     turn.state === "running" ? "pågår" : turn.state === "unknown" ? "okänt läge" : turn.state === "aborted" ? "avbruten" : duration((turn.end ?? now) - turn.start);
-  return `${hourMinute(turn.start)} · ${countOf(agents, "agent", "agenter")} · ${tail}`;
+  return `${hourMinute(turn.start)} · ${middle} · ${tail}`;
 }
 
 export function othersText(others: readonly OtherProject[]): string {

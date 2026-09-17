@@ -1,6 +1,9 @@
 import type { HookRecord } from "../collector/record.ts";
 import type { Lane, Piece, PieceKind, SessionModel, Turn } from "./types.ts";
 
+/** A new turn this soon after a background agent finished is its answer, not a new prompt. */
+const AGENT_TURN_MS = 3000;
+
 /** Q13: a running lane with no signal for this long is shown as unknown. */
 export const UNKNOWN_AFTER_MS = 10 * 60 * 1000;
 
@@ -77,9 +80,16 @@ export function interpretSession(id: string, records: readonly HookRecord[], now
 
   const current = (): TurnWork | undefined => turns.at(-1);
 
+  /** Claude Code sends a new prompt when a background agent finishes, so the turn is its answer. */
+  function triggerAt(t: number): Turn["trigger"] {
+    const previous = current();
+    if (previous === undefined || previous.stoppedAt === undefined) return "prompt";
+    return previous.agents.some((a) => a.lane.end !== undefined && t - a.lane.end <= AGENT_TURN_MS) ? "agent" : "prompt";
+  }
+
   function startTurn(t: number): TurnWork {
     const lane = newLane("main", "main", t);
-    const turn: Turn = { index: turns.length, start: t, state: "running", lanes: [lane] };
+    const turn: Turn = { index: turns.length, trigger: triggerAt(t), start: t, state: "running", lanes: [lane] };
     const main = { lane, open: new Map(), active: true, idleSince: t } as unknown as LaneWork;
     const work: TurnWork = { turn, main, agents: [] };
     main.turn = work;
