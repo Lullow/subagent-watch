@@ -65,15 +65,43 @@ test("ogiltig indata kastas med en orsak men utan innehåll", () => {
     [event({ session_id: "../../etc/passwd" }), "session_id"],
     [event({ session_id: SESSION.toUpperCase() }), "session_id"],
     [event({ hook_event_name: "Notification" }), "event"],
-    [event({ agent_id: "a/b", agent_type: "Explore" }), "agent"],
-    [event({ agent_id: "a25fe" }), "agent"],
-    [JSON.stringify({ session_id: SESSION, hook_event_name: "SubagentStart" }), "agent"],
     [event({ tool_name: "Read Bash" }), "tool"],
     [event({ tool_name: undefined }), "tool"],
     [event({ tool_use_id: "toolu_1; rm" }), "tool_use_id"],
   ];
   for (const [input, reason] of cases) {
     assert.deepEqual(parseHook(input, NOW, HOME), { ok: false, reason }, input);
+  }
+});
+
+test("en halv eller ogiltig identitet kostar fältet, aldrig händelsen", () => {
+  const event = (fields: Record<string, unknown>) =>
+    JSON.stringify({ session_id: SESSION, hook_event_name: "PreToolUse", tool_name: "Read", tool_use_id: "toolu_1", ...fields });
+  const pre = { ...base, event: "PreToolUse", tool: "Read", tool_use_id: "toolu_1" } as const;
+  const cases: [string, HookRecord, "agent_identity" | undefined][] = [
+    // Ett oanvändbart fält tar bara sig självt med sig, och räknas.
+    [event({ agent_id: "a/b", agent_type: "Explore" }), { ...pre, agent_type: "Explore" }, "agent_identity"],
+    [event({ agent_id: explore.agent_id, agent_type: "a b" }), { ...pre, agent_id: explore.agent_id }, "agent_identity"],
+    // Huvudtråden i en --agent-session skickar agent_type utan agent_id.
+    [event({ agent_type: "Explore" }), { ...pre, agent_type: "Explore" }, undefined],
+    [event({ agent_id: explore.agent_id }), { ...pre, agent_id: explore.agent_id }, undefined],
+    // Claude Codes interna agenter avslutar med tom agent_type, varje tur.
+    // Tomt betyder "ingen identitet", inte "identitet vi tappade": inget larm.
+    [
+      JSON.stringify({ session_id: SESSION, hook_event_name: "SubagentStop", agent_id: explore.agent_id, agent_type: "" }),
+      { ...base, event: "SubagentStop", agent_id: explore.agent_id },
+      undefined,
+    ],
+    // Även utan identitet alls är subagent-händelsen värd att spara.
+    [JSON.stringify({ session_id: SESSION, hook_event_name: "SubagentStart" }), { ...base, event: "SubagentStart" }, undefined],
+    // En hel identitet passerar orörd.
+    [event(explore), { ...pre, ...explore }, undefined],
+  ];
+  for (const [input, record, note] of cases) {
+    const result = parseHook(input, NOW, HOME);
+    assert.ok(result.ok, input);
+    assert.deepEqual(result.record, record, input);
+    assert.equal(result.note, note, input);
   }
 });
 

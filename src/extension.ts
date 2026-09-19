@@ -83,12 +83,14 @@ class Controller implements vscode.Disposable {
     let sessions: SessionModel[] = [];
     let storeError: string | null = null;
     let dropped = 0;
+    let anonymous = 0;
     let refused = 0;
     if (existsSync(this.layout.sessions)) {
       try {
         const data = this.store.refresh(now);
         sessions = data.sessions.map((s) => interpretSession(s.id, s.records, now));
         dropped = data.dropped + data.sessions.reduce((sum, s) => sum + s.rejected, 0);
+        anonymous = data.anonymous;
         refused = data.unsafe.length;
       } catch (error) {
         storeError = messageOf(error);
@@ -104,7 +106,7 @@ class Controller implements vscode.Disposable {
       now,
       sessions: view.sessions,
       others: view.others,
-      status: statusFacts({ ...this.install, storeError, lastEventAt, dropped, refused }),
+      status: statusFacts({ ...this.install, storeError, lastEventAt, dropped, anonymous, refused }),
     };
     this.last = snapshot;
     this.renderStatusBar(view.running, view.unknown);

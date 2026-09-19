@@ -50,6 +50,9 @@ async function main(): Promise<void> {
 
   const parsed = parseHook(input.toString("utf8"), now, homedir());
   if (!parsed.ok) return logProblem(home, parsed.reason, now);
+  // A note keeps the event but loses an identity we were given and could not
+  // use, so it is counted separately from a dropped event.
+  if (parsed.note !== undefined) logProblem(home, parsed.note, now);
 
   try {
     const result = writeRecord(home, parsed.sessionId, parsed.record);

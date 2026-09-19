@@ -23,6 +23,8 @@ export interface StoreSnapshot {
   unsafe: { file: string; reason: string }[];
   /** Events the collector dropped in the last 24 hours, from problems-*.jsonl. */
   dropped: number;
+  /** Events kept in the last 24 hours that lost their agent identity on the way in. */
+  anonymous: number;
 }
 
 interface Cached {
@@ -73,26 +75,32 @@ export class SessionStore {
     for (const name of this.cache.keys()) if (!names.includes(name)) this.cache.delete(name);
 
     let dropped = 0;
+    let anonymous = 0;
     for (const name of names.filter((n) => PROBLEM_FILE.test(n))) {
       try {
         const file = readFileChecked(join(dir, name), { private: true, maxBytes: MAX_PROBLEM_FILE_BYTES }, this.uid);
         if (file === null) continue;
         for (const line of decoder.decode(file.bytes).split("\n")) {
-          const time = (() => {
+          const problem = (() => {
             try {
-              return (JSON.parse(line) as { time?: unknown }).time;
+              return JSON.parse(line) as { time?: unknown; kind?: unknown };
             } catch {
               return undefined;
             }
           })();
-          if (typeof time === "number" && now - time < RETENTION_MS) dropped++;
+          const time = problem?.time;
+          if (typeof time !== "number" || now - time >= RETENTION_MS) continue;
+          // agent_identity keeps the event and loses only the identity, so it
+          // must not be counted as a dropped event.
+          if (problem?.kind === "agent_identity") anonymous++;
+          else dropped++;
         }
       } catch (error) {
         if (!(error instanceof UnsafePathError)) throw error;
         unsafe.push({ file: name, reason: error.message });
       }
     }
-    return { sessions, unsafe, dropped };
+    return { sessions, unsafe, dropped, anonymous };
   }
 
   private readSession(path: string, name: string): SessionData | null {

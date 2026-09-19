@@ -110,15 +110,25 @@ test("ihopfällda turer och raden för andra sessioner", () => {
 });
 
 test("statusraden har ett fast kommando att kopiera vid problem (Q18, S10)", () => {
-  assert.deepEqual(statusParts({ kind: "active", lastEventAt: at(14, 32, 5), dropped: 0, refused: 0 }), [{ icon: "ok" }, "Pluginet aktivt · senaste händelse 14:32:05"]);
-  assert.deepEqual(statusParts({ kind: "active", lastEventAt: null, dropped: 3, refused: 1 }), [
+  assert.deepEqual(statusParts({ kind: "active", lastEventAt: at(14, 32, 5), dropped: 0, anonymous: 0, refused: 0 }), [{ icon: "ok" }, "Pluginet aktivt · senaste händelse 14:32:05"]);
+  assert.deepEqual(statusParts({ kind: "active", lastEventAt: null, dropped: 3, anonymous: 2, refused: 1 }), [
     { icon: "ok" },
     "Pluginet aktivt · inga händelser än",
     " · ",
+    { icon: "warn" },
     { strong: "3 händelser kastades" },
-    " eftersom formatet var okänt",
+    " och syns inte här",
+    " · ",
+    { strong: "2 händelser utan agentidentitet" },
     " · ",
     { strong: "1 fil avvisades" },
+  ]);
+  // En tappad identitet är inte en tappad händelse och får inte larma som en.
+  assert.deepEqual(statusParts({ kind: "active", lastEventAt: null, dropped: 0, anonymous: 2, refused: 0 }), [
+    { icon: "ok" },
+    "Pluginet aktivt · inga händelser än",
+    " · ",
+    { strong: "2 händelser utan agentidentitet" },
   ]);
   const changed = statusParts({ kind: "changed", file: "hooks.json", actual: "4c1e".padEnd(60, "0") + "9b02", expected: "a7d3".padEnd(60, "0") + "61f8" });
   assert.deepEqual(changed.slice(1, 6), [{ strong: "Insamlaren har ändrats" }, " · hooks.json har kontrollsumman ", { code: "4c1e…9b02" }, ", väntad ", { code: "a7d3…61f8" }]);

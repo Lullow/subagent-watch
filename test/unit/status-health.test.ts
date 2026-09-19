@@ -18,6 +18,7 @@ const OK: HealthInput = {
   hooks: { state: "present", sha256: B },
   collector: { state: "present", sha256: A },
   nodeExists: true,
+  anonymous: 0,
   storeError: null,
   lastEventAt: 1000,
   dropped: 2,
@@ -25,7 +26,8 @@ const OK: HealthInput = {
 };
 
 test("statusraden visar aktivt plugin med senaste händelse och kastade händelser", () => {
-  assert.deepEqual(statusFacts(OK), { kind: "active", lastEventAt: 1000, dropped: 2, refused: 1 });
+  assert.deepEqual(statusFacts(OK), { kind: "active", lastEventAt: 1000, dropped: 2, anonymous: 0, refused: 1 });
+  assert.deepEqual(statusFacts({ ...OK, anonymous: 4 }), { kind: "active", lastEventAt: 1000, dropped: 2, anonymous: 4, refused: 1 });
 });
 
 test("statusraden visar det allvarligaste problemet först (Q18, Q36, R3)", () => {

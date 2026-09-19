@@ -14,6 +14,7 @@ export interface HealthInput extends InstallFacts {
   storeError: string | null;
   lastEventAt: number | null;
   dropped: number;
+  anonymous: number;
   refused: number;
 }
 
@@ -32,5 +33,5 @@ export function statusFacts(input: HealthInput): StatusFacts {
   }
   if (!input.nodeExists) return { kind: "node-missing", path: state.node.path };
   if (input.storeError !== null) return { kind: "store-refused", reason: input.storeError };
-  return { kind: "active", lastEventAt: input.lastEventAt, dropped: input.dropped, refused: input.refused };
+  return { kind: "active", lastEventAt: input.lastEventAt, dropped: input.dropped, anonymous: input.anonymous, refused: input.refused };
 }

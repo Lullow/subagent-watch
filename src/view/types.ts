@@ -12,7 +12,7 @@ export type StatusFacts =
   | { kind: "plugin-missing" }
   | { kind: "changed"; file: "collector.cjs" | "hooks.json"; actual: string | null; expected: string }
   | { kind: "node-missing"; path: string }
-  | { kind: "active"; lastEventAt: number | null; dropped: number; refused: number };
+  | { kind: "active"; lastEventAt: number | null; dropped: number; anonymous: number; refused: number };
 
 export interface ViewSnapshot {
   /** The extension host's clock. Records use it too, and in WSL it can differ from the webview's. */

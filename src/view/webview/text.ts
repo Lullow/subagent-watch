@@ -194,7 +194,8 @@ export function statusParts(facts: StatusFacts): Part[] {
       return [{ icon: "warn" }, { strong: "Inga nya händelser" }, " · Node-sökvägen i pluginet finns inte längre: ", { code: facts.path }, " · ", { code: DISCONNECT }, { copy: DISCONNECT }];
     case "active": {
       const parts: Part[] = [{ icon: "ok" }, `Pluginet aktivt · ${facts.lastEventAt === null ? "inga händelser än" : `senaste händelse ${clock(facts.lastEventAt)}`}`];
-      if (facts.dropped > 0) parts.push(" · ", { strong: `${countOf(facts.dropped, "händelse", "händelser")} kastades` }, " eftersom formatet var okänt");
+      if (facts.dropped > 0) parts.push(" · ", { icon: "warn" }, { strong: `${countOf(facts.dropped, "händelse", "händelser")} kastades` }, " och syns inte här");
+      if (facts.anonymous > 0) parts.push(" · ", { strong: `${countOf(facts.anonymous, "händelse", "händelser")} utan agentidentitet` });
       if (facts.refused > 0) parts.push(" · ", { strong: `${countOf(facts.refused, "fil avvisades", "filer avvisades")}` });
       return parts;
     }

@@ -61,10 +61,13 @@ export interface HookRecord {
   reason?: (typeof END_REASONS)[number];
 }
 
-export type ParseFailure = "empty" | "not_json" | "not_object" | "session_id" | "event" | "agent" | "tool" | "tool_use_id";
+export type ParseFailure = "empty" | "not_json" | "not_object" | "session_id" | "event" | "tool" | "tool_use_id";
+
+/** Counted like a failure, but the event is still kept: only a field was lost. */
+export type ParseNote = "agent_identity";
 
 export type ParseResult =
-  | { ok: true; sessionId: string; record: HookRecord }
+  | { ok: true; sessionId: string; record: HookRecord; note?: ParseNote }
   | { ok: false; reason: ParseFailure };
 
 type Json = Record<string, unknown>;
@@ -129,12 +132,21 @@ export function parseHook(text: string, now: number, home: string): ParseResult 
 
   const record: HookRecord = { v: 1, time: now, event };
 
-  const isAgentEvent = event === "SubagentStart" || event === "SubagentStop";
-  if (data.agent_id !== undefined || data.agent_type !== undefined || isAgentEvent) {
-    if (!matches(data.agent_id, AGENT_ID) || !matches(data.agent_type, AGENT_TYPE)) return { ok: false, reason: "agent" };
-    record.agent_id = data.agent_id;
-    record.agent_type = data.agent_type;
-  }
+  // The identity is metadata, not a precondition. Validating both fields together
+  // threw the whole event away over one unusable field, so they are validated
+  // apart: what passes is kept, what does not is dropped as a field alone.
+  //
+  // An absent field, and an empty one, both mean "no identity here" and are
+  // normal. Claude Code's own internal agents send SubagentStop with
+  // agent_type: "" every turn, so noting those would raise an alarm on every
+  // turn. Only a non-empty value we cannot use is worth counting: that is the
+  // shape that says the format moved under us.
+  const supplied = (v: unknown): boolean => v !== undefined && v !== "";
+  if (matches(data.agent_id, AGENT_ID)) record.agent_id = data.agent_id;
+  if (matches(data.agent_type, AGENT_TYPE)) record.agent_type = data.agent_type;
+  const unusable =
+    (supplied(data.agent_id) && record.agent_id === undefined) || (supplied(data.agent_type) && record.agent_type === undefined);
+  const note: ParseNote | undefined = unusable ? "agent_identity" : undefined;
 
   const cwd = str(data.cwd);
   if (event === "SessionStart" && cwd !== undefined) {
@@ -177,5 +189,5 @@ export function parseHook(text: string, now: number, home: string): ParseResult 
     if (reason !== undefined) record.reason = reason;
   }
 
-  return { ok: true, sessionId: data.session_id, record };
+  return note === undefined ? { ok: true, sessionId: data.session_id, record } : { ok: true, sessionId: data.session_id, record, note };
 }
