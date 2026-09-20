@@ -1,70 +1,70 @@
 # subagent-watch
 
-VS Code-extension som visar Claude Codes subagenter medan de arbetar – bara från dokumenterade, lokala källor.
+VS Code extension that shows Claude Code's subagents while they work — from documented, local sources only.
 
-**Status:** bygget har börjat. Alla designbeslut finns i [docs/subagent-watch-sammanfattning.md](docs/subagent-watch-sammanfattning.md), och den godkända skissen i [docs/skiss/subagent-watch-skiss.html](docs/skiss/subagent-watch-skiss.html). Första versionen är byggd: insamlaren, anslutningen, tolkningen och vyn.
+**Status:** the build has started. All design decisions live in [docs/subagent-watch-sammanfattning.md](docs/subagent-watch-sammanfattning.md), and the approved mockup in [docs/skiss/subagent-watch-skiss.html](docs/skiss/subagent-watch-skiss.html). The first version is built: the collector, the connection, the interpretation and the view.
 
-## Utveckling
+## Development
 
-Kräver Node 24.13 eller senare.
+Requires Node 24.13 or later.
 
 ```sh
 npm install
-npm run build      # bygger dist/collector.js med esbuild
+npm run build      # builds dist/collector.js with esbuild
 npm run typecheck
-npm test           # enhetstester och tester av de byggda filerna
-npm run test:integration  # startar VS Code 1.137.0 med påhittad data; kräver en skärm (CI använder xvfb)
-npm run testdata   # skapar test/fixtures/runs/ från spike/runs/, som aldrig checkas in (S11)
+npm test           # unit tests and tests of the built files
+npm run test:integration  # launches VS Code 1.137.0 with synthetic data; needs a display (CI uses xvfb)
+npm run testdata   # creates test/fixtures/runs/ from spike/runs/, which is never committed (S11)
 ```
 
-Starta extensionen i en utvecklingsinstans med F5 ("Kör extension").
+Launch the extension in a development instance with F5 ("Run extension").
 
-CI på GitHub (`.github/workflows/ci.yml`) kör typkontroll, enhetstester, tester från början till slut och integrationstesterna i VS Code, och paketerar en VSIX vars innehåll kontrolleras, vid varje push till `main` och varje pull request. Arbetsflödet har bara läsrättighet, inga hemligheter och actions låsta till exakta commits.
+CI on GitHub (`.github/workflows/ci.yml`) runs type checking, unit tests, end-to-end tests and the VS Code integration tests, and packages a VSIX whose contents are verified, on every push to `main` and every pull request. The workflow has read-only permission, no secrets, and actions pinned to exact commits.
 
-## Insamlaren
+## The collector
 
-`src/collector/` blir `~/.subagent-watch/bin/collector.cjs`. Claude Code kör den vid varje hook, i exec-form utan skal:
+`src/collector/` becomes `~/.subagent-watch/bin/collector.cjs`. Claude Code runs it on every hook, in exec form without a shell:
 
 ```
 /usr/bin/env -i <node> --permission --allow-fs-read=<collector> --allow-fs-read=<sessions>/ --allow-fs-write=<sessions>/ <collector> --home=~/.subagent-watch
 ```
 
-- **Sparar** bara fälten i tillåtelselistan i `src/collector/record.ts`, en rad per händelse i `sessions/<session_id>.jsonl` (0600 i en mapp med 0700).
-- **Sparar aldrig** Bash-kommandon, prompter, `Grep`-mönster, sökfrågor, rapporter, felmeddelanden eller hela adresser. All text rensas från styrtecken, maskeras och kortas i `src/collector/text.ts`.
-- **Skriver aldrig** till stdout eller stderr och avslutar alltid med kod 0.
-- **Kastade händelser** räknas i `sessions/problems-ÅÅÅÅ-MM-DD.jsonl` med bara orsak och tid.
-- **Rensning:** vid `SessionStart` tas filer bort vars senaste händelse är äldre än 24 timmar.
+- **Stores** only the allow-listed fields in `src/collector/record.ts`, one line per event in `sessions/<session_id>.jsonl` (0600 inside a 0700 directory).
+- **Never stores** Bash commands, prompts, `Grep` patterns, search queries, reports, error messages or full paths. All text is stripped of control characters, redacted and truncated in `src/collector/text.ts`.
+- **Never writes** to stdout or stderr, and always exits with code 0.
+- **Discarded events** are counted in `sessions/problems-YYYY-MM-DD.jsonl` with only a reason and a timestamp.
+- **Cleanup:** on `SessionStart`, files whose most recent event is older than 24 hours are removed.
 
-## Installera
+## Install
 
 ```sh
-npm run package                                   # bygger subagent-watch.vsix med bara det extensionen behöver
-code --install-extension subagent-watch.vsix      # i en WSL-terminal: installerar i VS Code-servern i WSL
-code --uninstall-extension lullo.subagent-watch   # tar bort den igen
+npm run package                                   # builds subagent-watch.vsix with only what the extension needs
+code --install-extension subagent-watch.vsix      # from a WSL terminal: installs into the VS Code server in WSL
+code --uninstall-extension lullo.subagent-watch   # removes it again
 ```
 
-Vyn ligger i bottenpanelen under fliken subagent-watch och kan dras bredvid Terminal eller in i sidopanelen. Kommandot "subagent-watch: Öppna i en flik", eller knappen i vyns rubrik, öppnar den som en egen flik i editorytan, där tidslinjen får full bredd. Den har tre former: bred med tidslinjen bredvid namnen, smal under 420 px med bara agenttypen, och stående under 320 px där tidslinjen ligger i full bredd under varje namn. Posten `⚙ 2` i statusfältet syns bara när agenter kör i fönstrets projekt. Kommandot "subagent-watch: Radera insamlad data" tar bort alla sessionsfiler efter en bekräftelse.
+The view sits in the bottom panel under the subagent-watch tab and can be dragged next to the Terminal or into the side panel. The command "subagent-watch: Open in a tab", or the button in the view header, opens it as its own tab in the editor area, where the timeline gets full width. It has three shapes: wide with the timeline beside the names, narrow below 420 px with only the agent type, and portrait below 320 px where the timeline sits full width under each name. The `⚙ 2` status bar item appears only while agents are running in the window's project. The command "subagent-watch: Delete collected data" removes all session files after a confirmation.
 
-## Tolkningen
+## The interpretation
 
-`src/model/` läser `sessions/` som opålitlig data och bygger det vyn visar:
+`src/model/` reads `sessions/` as untrusted data and builds what the view shows:
 
-- `reader.ts` läser bara hela nya rader, avvisar symlänkar, hårda länkar, fel rättigheter och för stora filer, och märker när en fil har ersatts.
-- `schema.ts` godkänner bara rader som exakt följer insamlarens schema.
-- `interpret.ts` bygger turer, rader för huvudsessionen och agenterna, bitar per kategori (Q26), föräldrar, väntan på dig, fel, avbrutna agenter och okänt läge. Ordningen i filen styr, och tidsstämplarna görs monotona.
-- `window.ts` väljer sessionerna för fönstrets projekt (Q3, Q15, Q16) och sammanfattar andra projekt.
+- `reader.ts` reads only complete new lines, rejects symlinks, hard links, wrong permissions and oversized files, and detects when a file has been replaced.
+- `schema.ts` accepts only lines that exactly follow the collector's schema.
+- `interpret.ts` builds turns, rows for the main session and the agents, chunks per category (Q26), parents, waiting-on-you, errors, cancelled agents and unknown state. File order governs, and timestamps are made monotonic.
+- `window.ts` selects the sessions for the window's project (Q3, Q15, Q16) and summarises other projects.
 
-## Ansluta
+## Connecting
 
 ```sh
-npm run connect                                   # visar planen och dess hash, ändrar ingenting
-npm run connect -- --apply=<hash>                 # utför exakt den planen
-npm run connect -- --disconnect                   # visar planen för bortkoppling
+npm run connect                                   # shows the plan and its hash, changes nothing
+npm run connect -- --apply=<hash>                 # applies exactly that plan
+npm run connect -- --disconnect                   # shows the disconnection plan
 npm run connect -- --disconnect --apply=<hash>
 ```
 
-Anslutningen skapar pluginet `~/.claude/skills/subagent-watch/` med `.claude-plugin/plugin.json` och `hooks/hooks.json`, installerar insamlaren och sparar kontrollsummorna i `~/.subagent-watch/connection.json`. Den skriver aldrig till `~/.claude/settings.json`. Den avbryts om pluginmappen redan finns eller är en symlänk, om mappkedjan kan ändras av någon annan och med Node äldre än 24.13.0 eller 25.0–25.2.
+Connecting creates the plugin `~/.claude/skills/subagent-watch/` with `.claude-plugin/plugin.json` and `hooks/hooks.json`, installs the collector, and records the checksums in `~/.subagent-watch/connection.json`. It never writes to `~/.claude/settings.json`. It aborts if the plugin directory already exists or is a symlink, if the directory chain can be modified by someone else, and on Node older than 24.13.0 or 25.0–25.2.
 
-Pluginet heter `subagent-watch@skills-dir` och laddas i nya sessioner. I sessioner som redan körs gäller det först efter `/reload-plugins`.
+The plugin is named `subagent-watch@skills-dir` and loads in new sessions. In sessions that are already running it takes effect only after `/reload-plugins`.
 
-Bortkopplingen tar bara bort filer vars kontrollsumma stämmer. En ändrad fil lämnas kvar, och då ligger `connection.json` också kvar så att bortkopplingen kan köras igen. Insamlad data i `~/.subagent-watch/sessions/` rörs inte.
+Disconnecting removes only files whose checksum matches. A modified file is left in place, and `connection.json` is then also left behind so that disconnection can be run again. Collected data in `~/.subagent-watch/sessions/` is left untouched.

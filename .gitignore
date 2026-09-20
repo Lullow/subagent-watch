@@ -11,3 +11,6 @@ spike/events.jsonl
 # Personlig och maskinspecifik: kopplar in spike/log-hook.mjs med absoluta
 # sökvägar. Claude Codes egen konvention är att settings.local.json aldrig delas.
 .claude/settings.local.json
+.DS_Store
+Thumbs.db
+.env
